@@ -24,6 +24,7 @@ export default function GameNav({
   const [streak, setStreak] = useState(0);
   const [todayDone, setTodayDone] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const { streak, todayDone } = getStreakData();
@@ -42,9 +43,13 @@ export default function GameNav({
       const tick = (now: number) => {
         const t = Math.min((now - start) / duration, 1);
         container.scrollLeft = from + delta * easeOutCubic(t);
-        if (t < 1) requestAnimationFrame(tick);
+        if (t < 1) {
+          rafRef.current = requestAnimationFrame(tick);
+        } else {
+          rafRef.current = null;
+        }
       };
-      requestAnimationFrame(tick);
+      rafRef.current = requestAnimationFrame(tick);
     }
 
     function handleKey(e: KeyboardEvent) {
@@ -59,18 +64,23 @@ export default function GameNav({
       onSelectCountry(COUNTRIES[next].code);
 
       // 2. Smooth-scroll only if the target flag isn't fully visible
+      //    Use offsetLeft (container-relative, stable after trackpad scroll)
       const container = scrollRef.current;
       if (!container) return;
       const buttons = container.querySelectorAll('button');
       const btn = buttons[next] as HTMLElement | undefined;
       if (!btn) return;
-      const { left: bLeft, right: bRight } = btn.getBoundingClientRect();
-      const { left: cLeft, right: cRight } = container.getBoundingClientRect();
-      const pad = 16;
-      if (bLeft < cLeft) {
-        smoothScroll(container, container.scrollLeft - (cLeft - bLeft) - pad);
-      } else if (bRight > cRight) {
-        smoothScroll(container, container.scrollLeft + (bRight - cRight) + pad);
+      const pad = 20;
+      const btnLeft = btn.offsetLeft;
+      const btnRight = btnLeft + btn.offsetWidth;
+      const scrollLeft = container.scrollLeft;
+      const containerWidth = container.clientWidth;
+      if (btnLeft < scrollLeft + pad) {
+        if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+        smoothScroll(container, btnLeft - pad);
+      } else if (btnRight > scrollLeft + containerWidth - pad) {
+        if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+        smoothScroll(container, btnRight - containerWidth + pad);
       }
     }
 
