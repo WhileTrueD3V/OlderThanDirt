@@ -17,56 +17,71 @@ export default function GameNav({ currentTopic, currentCountry }: Props) {
   }
 
   return (
-    <header className="sticky top-0 z-10 backdrop-blur-md bg-white/5 border-b border-white/10">
-      <div className="max-w-xl mx-auto px-5">
-        {/* Logo + topic tabs */}
-        <div className="flex items-center justify-between py-3 gap-3">
-          <span className="font-black text-white text-base tracking-tight whitespace-nowrap">
-            ⏳ OlderThanDirt
-          </span>
-          <div className="flex gap-1">
-            {TOPICS.map((t) => (
+    <header className="backdrop-blur-md bg-white/5 border-b border-white/10">
+      <div className="max-w-2xl mx-auto px-6 pt-7 pb-5 flex flex-col items-center gap-5">
+
+        {/* Logo — big and centered */}
+        <div className="text-2xl font-black text-white tracking-tight">
+          ⏳ OlderThanDirt
+        </div>
+
+        {/* Topic tabs — centered row */}
+        <div className="flex gap-2">
+          {TOPICS.map((t) => {
+            const active = currentTopic === t.id;
+            return (
               <button
                 key={t.id}
                 onClick={() => navigate(t.id, currentCountry)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                  currentTopic === t.id
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all cursor-pointer ${
+                  active
                     ? 'bg-white/25 text-white shadow-sm'
                     : 'text-white/45 hover:text-white/75 hover:bg-white/10'
                 }`}
               >
-                {t.emoji} {t.label.split(' ')[0]}
+                <span>{t.emoji}</span>
+                <span>{t.label}</span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        {/* Country flags */}
-        <div className="flex gap-4 pb-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        {/* Divider */}
+        <div className="w-full border-t border-white/10" />
+
+        {/* Country flags — big, centered, with labels */}
+        <div className="flex gap-5 flex-wrap justify-center pb-1">
           {COUNTRIES.map((c) => {
             const active = currentCountry === c.code;
             return (
               <button
                 key={c.code}
                 onClick={() => navigate(currentTopic, c.code)}
-                className={`flex flex-col items-center gap-0.5 flex-shrink-0 cursor-pointer transition-opacity ${
-                  active ? 'opacity-100' : 'opacity-30 hover:opacity-55'
+                className={`flex flex-col items-center gap-1.5 cursor-pointer transition-opacity ${
+                  active ? 'opacity-100' : 'opacity-30 hover:opacity-60'
                 }`}
               >
                 <span
-                  className={`text-2xl leading-none p-1 rounded-full transition-all ${
-                    active ? 'ring-2 ring-white/50 bg-white/15' : ''
+                  className={`text-4xl leading-none transition-all ${
+                    active
+                      ? 'drop-shadow-lg'
+                      : ''
                   }`}
                 >
                   {c.flag}
                 </span>
-                <span className="text-[10px] text-white/50 font-medium">
-                  {c.code === 'global' ? 'All' : c.code.toUpperCase()}
+                <span
+                  className={`text-xs font-semibold tracking-wide transition-colors ${
+                    active ? 'text-white' : 'text-white/50'
+                  }`}
+                >
+                  {c.code === 'global' ? 'Global' : c.name.split(' ')[0]}
                 </span>
               </button>
             );
           })}
         </div>
+
       </div>
     </header>
   );

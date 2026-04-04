@@ -32,15 +32,15 @@ export default async function Home({ searchParams }: PageProps) {
       <GameNav currentTopic={topic} currentCountry={country} />
 
       <div className="max-w-xl mx-auto px-5 py-10">
-        {/* Title */}
-        <div className="text-center mb-8">
-          <p className="text-white/35 text-xs uppercase tracking-widest mb-2">
+        {/* Puzzle title */}
+        <div className="text-center mb-10">
+          <p className="text-white/35 text-xs uppercase tracking-widest mb-3">
             Sort by date
           </p>
-          <h1 className="text-3xl font-black text-white">
-            <span className="text-white/25">· </span>
+          <h1 className="text-5xl font-black text-white leading-tight">
+            <span className="text-white/20">· </span>
             {topicInfo.label}
-            <span className="text-white/25"> ·</span>
+            <span className="text-white/20"> ·</span>
           </h1>
         </div>
 
@@ -48,7 +48,7 @@ export default async function Home({ searchParams }: PageProps) {
       </div>
 
       <footer className="max-w-xl mx-auto px-5 pb-10 text-center">
-        <p className="text-white/25 text-xs">
+        <p className="text-white/20 text-xs">
           OlderThanDirt — how well do you know what came first?
         </p>
       </footer>
