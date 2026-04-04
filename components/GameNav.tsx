@@ -54,6 +54,7 @@ export default function GameNav({
 
     function handleKey(e: KeyboardEvent) {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault(); // stop browser from natively scrolling the focused overflow container
       const currentIndex = COUNTRIES.findIndex((c) => c.code === currentCountry);
       const next = e.key === 'ArrowRight'
         ? Math.min(currentIndex + 1, COUNTRIES.length - 1)
