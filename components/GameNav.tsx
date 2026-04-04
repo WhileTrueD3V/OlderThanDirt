@@ -41,11 +41,17 @@ export default function GameNav({
         : Math.max(currentIndex - 1, 0);
       if (next === currentIndex) return;
       onSelectCountry(COUNTRIES[next].code);
-      // Scroll the new flag into view
+      // Only scroll if the next flag is outside the visible area
       const container = scrollRef.current;
       if (!container) return;
       const buttons = container.querySelectorAll('button');
-      buttons[next]?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+      const btn = buttons[next] as HTMLElement | undefined;
+      if (!btn) return;
+      const { left: bLeft, right: bRight } = btn.getBoundingClientRect();
+      const { left: cLeft, right: cRight } = container.getBoundingClientRect();
+      if (bLeft < cLeft || bRight > cRight) {
+        btn.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+      }
     }
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
@@ -60,7 +66,7 @@ export default function GameNav({
           <Logo />
           {titleProgress && (
             <span className="text-[11px] text-white/40 font-medium tracking-wide">
-              {titleProgress.title.emoji} {titleProgress.title.name} · {titleProgress.gamesPlayed} games
+              {titleProgress.title.name} · {titleProgress.gamesPlayed} games
             </span>
           )}
         </div>

@@ -109,7 +109,6 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
       {unlockedTitle && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 fade-in">
           <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl px-6 py-4 text-center shadow-2xl">
-            <div className="text-3xl mb-1">{unlockedTitle.emoji}</div>
             <div className="text-white font-black text-lg">Title unlocked: {unlockedTitle.name}!</div>
             <div className="text-white/60 text-sm mt-0.5">{unlockedTitle.description}</div>
             <button
@@ -157,7 +156,7 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
         {titleProgress && (
           <div className="mb-4">
             <div className="text-white/30 text-xs mb-2">
-              {titleProgress.title.emoji} {titleProgress.title.name}
+              {titleProgress.title.name}
               {titleProgress.nextTitle && (
                 <span> · {titleProgress.gamesUntilNext} games to {titleProgress.nextTitle.name}</span>
               )}
