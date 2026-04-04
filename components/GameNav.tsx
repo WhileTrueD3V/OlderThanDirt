@@ -71,7 +71,10 @@ export default function GameNav({
       const btn = buttons[next] as HTMLElement | undefined;
       if (!btn) return;
       const pad = 20;
-      const btnLeft = btn.offsetLeft;
+      const cRect = container.getBoundingClientRect();
+      const bRect = btn.getBoundingClientRect();
+      // Convert viewport-relative → scroll-content-relative (stable after trackpad scroll)
+      const btnLeft = bRect.left - cRect.left + container.scrollLeft;
       const btnRight = btnLeft + btn.offsetWidth;
       const scrollLeft = container.scrollLeft;
       const containerWidth = container.clientWidth;
