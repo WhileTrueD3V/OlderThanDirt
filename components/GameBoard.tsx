@@ -5,17 +5,20 @@ import { useRouter } from 'next/navigation';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { GameEvent, Topic, CountryCode } from '@/types/game';
 import { sortByYear, calculateScore, formatYear, getScoreMessage } from '@/lib/gameUtils';
+import { recordDailyCompletion } from '@/lib/streak';
 
 interface Props {
   events: GameEvent[];
   topic: Topic;
   country: CountryCode;
+  isDaily?: boolean;
 }
 
-export default function GameBoard({ events, topic, country }: Props) {
+export default function GameBoard({ events, topic, country, isDaily }: Props) {
   const router = useRouter();
   const [items, setItems] = useState<GameEvent[]>(events);
   const [submitted, setSubmitted] = useState(false);
+  const [finalStreak, setFinalStreak] = useState<number | null>(null);
   const [correctOrder] = useState<GameEvent[]>(() => sortByYear(events));
 
   const score = submitted ? calculateScore(items, correctOrder) : 0;
@@ -191,11 +194,33 @@ export default function GameBoard({ events, topic, country }: Props) {
       {/* Action buttons */}
       {!submitted ? (
         <button
-          onClick={() => setSubmitted(true)}
+          onClick={() => {
+            setSubmitted(true);
+            if (isDaily) {
+              const s = recordDailyCompletion();
+              setFinalStreak(s);
+            }
+          }}
           className="w-full py-4 backdrop-blur-md bg-white/15 hover:bg-white/22 border border-white/25 hover:border-white/40 text-white font-bold text-base rounded-2xl transition-all active:scale-95 cursor-pointer shadow-lg shadow-black/10 tracking-wide"
         >
           Lock it in
         </button>
+      ) : isDaily ? (
+        <div className="flex flex-col items-center gap-3">
+          {finalStreak !== null && (
+            <div className="text-center py-3">
+              <div className="text-4xl mb-1">🔥</div>
+              <div className="text-white font-bold text-lg">{finalStreak} day streak!</div>
+              <div className="text-white/40 text-sm mt-1">Come back tomorrow to keep it going.</div>
+            </div>
+          )}
+          <button
+            onClick={() => router.push('/')}
+            className="w-full py-4 backdrop-blur-md bg-white/15 hover:bg-white/22 border border-white/25 text-white font-semibold text-base rounded-2xl transition-all active:scale-95 cursor-pointer"
+          >
+            Play more puzzles
+          </button>
+        </div>
       ) : (
         <div className="flex gap-3">
           <button

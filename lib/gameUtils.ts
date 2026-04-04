@@ -45,6 +45,49 @@ function shuffleArray<T>(array: T[]): T[] {
   return arr;
 }
 
+function seededRandom(seed: number): () => number {
+  let s = seed;
+  return () => {
+    s = (Math.imul(1664525, s) + 1013904223) | 0;
+    return (s >>> 0) / 0x100000000;
+  };
+}
+
+function seededShuffle<T>(array: T[], seed: number): T[] {
+  const arr = [...array];
+  const rand = seededRandom(seed);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+export function getTodayUTC(): string {
+  const d = new Date();
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+export function getDailyTopic(): Topic {
+  const dayNum = Math.floor(Date.now() / 86_400_000); // UTC days since epoch
+  const topics: Topic[] = ['food', 'inventions', 'popculture'];
+  return topics[dayNum % 3];
+}
+
+export function getDailyEvents(topic: Topic): GameEvent[] {
+  const pool = events.filter((e) => e.topic === topic);
+  // Seed: numeric YYYYMMDD — same for everyone on the same UTC day
+  const d = new Date();
+  const seed =
+    d.getUTCFullYear() * 10000 +
+    (d.getUTCMonth() + 1) * 100 +
+    d.getUTCDate();
+  return seededShuffle(pool, seed).slice(0, 5);
+}
+
 export function getEventsForGame(topic: Topic, country: CountryCode): GameEvent[] {
   // Events matching topic AND country (or global)
   const filtered = events.filter(
