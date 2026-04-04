@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Topic, CountryCode } from '@/types/game';
 import { TOPICS, COUNTRIES } from '@/lib/gameUtils';
 import { getStreakData } from '@/lib/streak';
+import Logo from './Logo';
 
 interface Props {
   currentTopic: Topic;
@@ -53,9 +54,7 @@ export default function GameNav({
       <div className="max-w-2xl mx-auto px-6 pt-7 pb-5 flex flex-col items-center gap-5">
 
         {/* Logo */}
-        <div className="text-2xl font-black text-white tracking-tight">
-          ⏳ OlderThanDirt
-        </div>
+        <Logo />
 
         {/* Topic tabs + Daily */}
         <div className="flex gap-2 flex-wrap justify-center">
