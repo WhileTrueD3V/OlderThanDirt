@@ -40,18 +40,20 @@ export default function GameNav({
         ? Math.min(currentIndex + 1, COUNTRIES.length - 1)
         : Math.max(currentIndex - 1, 0);
       if (next === currentIndex) return;
-      onSelectCountry(COUNTRIES[next].code);
-      // Only scroll if the next flag is outside the visible area
+      // Scroll first (before React re-render), then update state
       const container = scrollRef.current;
-      if (!container) return;
-      const buttons = container.querySelectorAll('button');
-      const btn = buttons[next] as HTMLElement | undefined;
-      if (!btn) return;
-      const { left: bLeft, right: bRight } = btn.getBoundingClientRect();
-      const { left: cLeft, right: cRight } = container.getBoundingClientRect();
-      if (bLeft < cLeft || bRight > cRight) {
-        btn.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+      if (container) {
+        const buttons = container.querySelectorAll('button');
+        const btn = buttons[next] as HTMLElement | undefined;
+        if (btn) {
+          const { left: bLeft, right: bRight } = btn.getBoundingClientRect();
+          const { left: cLeft, right: cRight } = container.getBoundingClientRect();
+          if (bLeft < cLeft || bRight > cRight) {
+            btn.scrollIntoView({ behavior: 'instant', inline: 'nearest', block: 'nearest' });
+          }
+        }
       }
+      onSelectCountry(COUNTRIES[next].code);
     }
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
