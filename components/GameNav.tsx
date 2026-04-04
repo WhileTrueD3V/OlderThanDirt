@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { Topic, CountryCode } from '@/types/game';
 import { TOPICS, COUNTRIES } from '@/lib/gameUtils';
 import { getStreakData } from '@/lib/streak';
@@ -10,26 +9,44 @@ interface Props {
   currentTopic: Topic;
   currentCountry: CountryCode;
   isDaily: boolean;
+  onSelectTopic: (t: Topic) => void;
+  onSelectCountry: (c: CountryCode) => void;
+  onGoDaily: () => void;
 }
 
-export default function GameNav({ currentTopic, currentCountry, isDaily }: Props) {
-  const router = useRouter();
+export default function GameNav({
+  currentTopic, currentCountry, isDaily,
+  onSelectTopic, onSelectCountry, onGoDaily,
+}: Props) {
   const [streak, setStreak] = useState(0);
   const [todayDone, setTodayDone] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const { streak, todayDone } = getStreakData();
     setStreak(streak);
     setTodayDone(todayDone);
-  }, []);
+  }, [isDaily]);
 
-  function navigate(topic: Topic, country: CountryCode) {
-    router.push(`/?topic=${topic}&country=${country}`);
-  }
-
-  function goDaily() {
-    router.push('/?daily=true');
-  }
+  // Arrow key navigation for the country slider
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const currentIndex = COUNTRIES.findIndex((c) => c.code === currentCountry);
+      const next = e.key === 'ArrowRight'
+        ? Math.min(currentIndex + 1, COUNTRIES.length - 1)
+        : Math.max(currentIndex - 1, 0);
+      if (next === currentIndex) return;
+      onSelectCountry(COUNTRIES[next].code);
+      // Scroll the new flag into view
+      const container = scrollRef.current;
+      if (!container) return;
+      const buttons = container.querySelectorAll('button');
+      buttons[next]?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+    }
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [currentCountry, onSelectCountry]);
 
   return (
     <header className="backdrop-blur-md bg-white/5 border-b border-white/10">
@@ -40,14 +57,14 @@ export default function GameNav({ currentTopic, currentCountry, isDaily }: Props
           ⏳ OlderThanDirt
         </div>
 
-        {/* Topic tabs + Daily button */}
+        {/* Topic tabs + Daily */}
         <div className="flex gap-2 flex-wrap justify-center">
           {TOPICS.map((t) => {
             const active = currentTopic === t.id && !isDaily;
             return (
               <button
                 key={t.id}
-                onClick={() => navigate(t.id, currentCountry)}
+                onClick={() => onSelectTopic(t.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer ${
                   active
                     ? 'bg-white/25 text-white shadow-sm'
@@ -60,9 +77,8 @@ export default function GameNav({ currentTopic, currentCountry, isDaily }: Props
             );
           })}
 
-          {/* Daily button */}
           <button
-            onClick={goDaily}
+            onClick={onGoDaily}
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer ${
               isDaily
                 ? 'bg-white/25 text-white shadow-sm'
@@ -85,15 +101,15 @@ export default function GameNav({ currentTopic, currentCountry, isDaily }: Props
         {/* Divider */}
         <div className="w-full border-t border-white/10" />
 
-        {/* Country flags — horizontal scroll, centered when fits */}
-        <div className="w-full overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        {/* Country flags — horizontal scroll, arrow-key navigable */}
+        <div ref={scrollRef} className="w-full overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
           <div className="flex gap-5 w-max mx-auto pb-1 px-2">
             {COUNTRIES.map((c) => {
               const active = currentCountry === c.code && !isDaily;
               return (
                 <button
                   key={c.code}
-                  onClick={() => navigate(currentTopic, c.code)}
+                  onClick={() => onSelectCountry(c.code)}
                   className={`flex flex-col items-center gap-1.5 cursor-pointer transition-opacity flex-shrink-0 ${
                     active ? 'opacity-100' : 'opacity-30 hover:opacity-60'
                   }`}
