@@ -32,32 +32,32 @@ export default function GameBoard({ events, topic, country }: Props) {
   );
 
   return (
-    <div className="max-w-xl mx-auto w-full">
+    <div className="w-full">
       {/* Score banner */}
       {submitted && (
         <div
-          className={`rounded-2xl p-4 mb-6 flex items-center gap-4 border ${
+          className={`backdrop-blur-md rounded-2xl p-4 mb-6 flex items-center gap-4 border ${
             score === 5
-              ? 'bg-green-950/40 border-green-800'
+              ? 'bg-teal-300/15 border-teal-300/30'
               : score >= 3
-              ? 'bg-amber-950/40 border-amber-800'
-              : 'bg-red-950/40 border-red-900'
+              ? 'bg-amber-300/15 border-amber-300/30'
+              : 'bg-red-300/10 border-red-300/20'
           }`}
         >
           <div
             className={`text-4xl font-black tabular-nums ${
               score === 5
-                ? 'text-green-400'
+                ? 'text-teal-200'
                 : score >= 3
-                ? 'text-amber-400'
-                : 'text-red-400'
+                ? 'text-amber-200'
+                : 'text-red-200'
             }`}
           >
             {score}/5
           </div>
           <div>
             <div className="font-semibold text-white">{getScoreMessage(score)}</div>
-            <div className="text-sm text-[#666] mt-0.5">
+            <div className="text-sm text-white/45 mt-0.5">
               {score === 5
                 ? 'All 5 in the right order'
                 : `${score} card${score === 1 ? '' : 's'} in the correct position`}
@@ -66,13 +66,13 @@ export default function GameBoard({ events, topic, country }: Props) {
         </div>
       )}
 
-      {/* EARLIEST label */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex-1 h-px bg-[#2a2a2a]" />
-        <span className="text-[11px] font-semibold uppercase tracking-widest text-[#555]">
+      {/* EARLIEST divider */}
+      <div className="flex items-center gap-4 mb-4">
+        <div className="flex-1 border-t border-dashed border-white/20" />
+        <span className="text-[11px] font-semibold uppercase tracking-widest text-white/35">
           Earliest
         </span>
-        <div className="flex-1 h-px bg-[#2a2a2a]" />
+        <div className="flex-1 border-t border-dashed border-white/20" />
       </div>
 
       {/* Cards */}
@@ -104,20 +104,21 @@ export default function GameBoard({ events, topic, country }: Props) {
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
                         className={`
-                          flex items-center gap-3 rounded-xl border p-3 transition-all duration-100 select-none
+                          flex items-center gap-3 rounded-2xl border p-3.5 transition-all duration-100 select-none
+                          backdrop-blur-md
                           ${snapshot.isDragging
-                            ? 'border-[#e8640c] bg-[#1c1c1c] shadow-2xl shadow-black/60 scale-[1.02]'
+                            ? 'bg-white/25 border-white/40 shadow-2xl shadow-black/20 scale-[1.02]'
                             : isCorrect
-                            ? 'border-green-700 bg-green-950/30'
+                            ? 'bg-teal-300/15 border-teal-300/30'
                             : isWrong
-                            ? 'border-red-900 bg-red-950/20'
-                            : 'border-[#2a2a2a] bg-[#1c1c1c] hover:border-[#3a3a3a]'
+                            ? 'bg-red-300/10 border-red-200/20'
+                            : 'bg-white/10 border-white/15 hover:bg-white/15 hover:border-white/25'
                           }
                           ${!submitted && !snapshot.isDragging ? 'cursor-grab active:cursor-grabbing' : ''}
                         `}
                       >
                         {/* Emoji thumbnail */}
-                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-[#252525] flex items-center justify-center text-2xl">
+                        <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-xl">
                           {event.emoji}
                         </div>
 
@@ -127,35 +128,42 @@ export default function GameBoard({ events, topic, country }: Props) {
                             {event.title}
                           </div>
                           {submitted && (
-                            <div className="flex items-center gap-2 mt-1">
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
                               <span
                                 className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                                   isCorrect
-                                    ? 'bg-green-900/60 text-green-400'
-                                    : 'bg-[#252525] text-[#888]'
+                                    ? 'bg-teal-300/20 text-teal-200'
+                                    : 'bg-white/10 text-white/55'
                                 }`}
                               >
                                 {formatYear(event.year)}
                               </span>
                               {isWrong && (
-                                <span className="text-xs text-[#555]">
-                                  should be #{correctPos + 1}
+                                <span className="text-xs text-white/35">
+                                  → should be #{correctPos + 1}
                                 </span>
                               )}
                             </div>
                           )}
                         </div>
 
-                        {/* Right side: status or drag handle */}
+                        {/* Status / drag handle */}
                         <div className="flex-shrink-0">
                           {submitted ? (
-                            <span className={`text-lg ${isCorrect ? 'text-green-400' : 'text-red-500'}`}>
+                            <span
+                              className={`text-base font-bold ${
+                                isCorrect ? 'text-teal-300' : 'text-red-300/70'
+                              }`}
+                            >
                               {isCorrect ? '✓' : '✗'}
                             </span>
                           ) : (
-                            <div className="flex flex-col gap-1 px-1">
+                            <div className="flex flex-col gap-[5px] px-1">
                               {[0, 1, 2].map((i) => (
-                                <div key={i} className="w-3.5 h-0.5 bg-[#3a3a3a] rounded-full" />
+                                <div
+                                  key={i}
+                                  className="w-3.5 h-[2px] bg-white/25 rounded-full"
+                                />
                               ))}
                             </div>
                           )}
@@ -171,20 +179,20 @@ export default function GameBoard({ events, topic, country }: Props) {
         </Droppable>
       </DragDropContext>
 
-      {/* LATEST label */}
-      <div className="flex items-center gap-3 mt-4 mb-8">
-        <div className="flex-1 h-px bg-[#2a2a2a]" />
-        <span className="text-[11px] font-semibold uppercase tracking-widest text-[#555]">
+      {/* LATEST divider */}
+      <div className="flex items-center gap-4 mt-4 mb-8">
+        <div className="flex-1 border-t border-dashed border-white/20" />
+        <span className="text-[11px] font-semibold uppercase tracking-widest text-white/35">
           Latest
         </span>
-        <div className="flex-1 h-px bg-[#2a2a2a]" />
+        <div className="flex-1 border-t border-dashed border-white/20" />
       </div>
 
       {/* Action buttons */}
       {!submitted ? (
         <button
           onClick={() => setSubmitted(true)}
-          className="w-full py-4 bg-[#e8640c] hover:bg-[#d45a0a] text-white font-bold text-base rounded-xl transition-all active:scale-95 cursor-pointer shadow-lg shadow-[#e8640c]/20"
+          className="w-full py-4 backdrop-blur-md bg-white/15 hover:bg-white/22 border border-white/25 hover:border-white/40 text-white font-bold text-base rounded-2xl transition-all active:scale-95 cursor-pointer shadow-lg shadow-black/10 tracking-wide"
         >
           Lock it in
         </button>
@@ -192,13 +200,13 @@ export default function GameBoard({ events, topic, country }: Props) {
         <div className="flex gap-3">
           <button
             onClick={() => router.refresh()}
-            className="flex-1 py-4 bg-[#e8640c] hover:bg-[#d45a0a] text-white font-bold text-base rounded-xl transition-all active:scale-95 cursor-pointer"
+            className="flex-1 py-4 backdrop-blur-md bg-white/20 hover:bg-white/28 border border-white/30 text-white font-bold text-base rounded-2xl transition-all active:scale-95 cursor-pointer"
           >
             Play again
           </button>
           <button
             onClick={() => router.push('/')}
-            className="flex-1 py-4 bg-[#1c1c1c] hover:bg-[#252525] text-white font-semibold text-base rounded-xl border border-[#2a2a2a] hover:border-[#3a3a3a] transition-all active:scale-95 cursor-pointer"
+            className="flex-1 py-4 backdrop-blur-md bg-white/8 hover:bg-white/15 border border-white/15 hover:border-white/25 text-white/70 hover:text-white font-semibold text-base rounded-2xl transition-all active:scale-95 cursor-pointer"
           >
             Change topic
           </button>

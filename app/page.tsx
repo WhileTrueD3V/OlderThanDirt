@@ -25,27 +25,33 @@ export default async function Home({ searchParams }: PageProps) {
 
   const events = getEventsForGame(topic, country);
   const topicInfo = TOPICS.find((t) => t.id === topic)!;
-
-  // seed forces GameBoard to remount (fresh state) on every server render
   const seed = Math.random().toString(36).slice(2);
 
   return (
-    <main className="min-h-screen bg-[#111]">
+    <>
       <GameNav currentTopic={topic} currentCountry={country} />
 
-      <div className="max-w-xl mx-auto px-4 py-8">
-        {/* Puzzle title */}
+      <div className="max-w-xl mx-auto px-5 py-10">
+        {/* Title */}
         <div className="text-center mb-8">
-          <p className="text-[#555] text-xs uppercase tracking-widest mb-2">Sort by date</p>
+          <p className="text-white/35 text-xs uppercase tracking-widest mb-2">
+            Sort by date
+          </p>
           <h1 className="text-3xl font-black text-white">
-            <span className="text-[#444]">· </span>
+            <span className="text-white/25">· </span>
             {topicInfo.label}
-            <span className="text-[#444]"> ·</span>
+            <span className="text-white/25"> ·</span>
           </h1>
         </div>
 
         <GameBoard key={seed} events={events} topic={topic} country={country} />
       </div>
-    </main>
+
+      <footer className="max-w-xl mx-auto px-5 pb-10 text-center">
+        <p className="text-white/25 text-xs">
+          OlderThanDirt — how well do you know what came first?
+        </p>
+      </footer>
+    </>
   );
 }
