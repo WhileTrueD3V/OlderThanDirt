@@ -88,19 +88,30 @@ export function getDailyEvents(topic: Topic): GameEvent[] {
   return seededShuffle(pool, seed).slice(0, 5);
 }
 
-export function getEventsForGame(topic: Topic, country: CountryCode): GameEvent[] {
-  // Events matching topic AND country (or global)
-  const filtered = events.filter(
-    (e) =>
-      e.topic === topic &&
-      (e.countries.includes(country) || e.countries.includes('global'))
-  );
+export function getEventsForGame(
+  topic: Topic,
+  country: CountryCode,
+  exclude: string[] = []
+): GameEvent[] {
+  const excludeSet = new Set(exclude);
 
-  // Fallback: if fewer than 5, use all events of that topic
-  const pool = filtered.length >= 5 ? filtered : events.filter((e) => e.topic === topic);
+  // Build pool — strict country filter (no global leakage)
+  let pool: GameEvent[];
+  if (country === 'global') {
+    pool = events.filter((e) => e.topic === topic);
+  } else {
+    const strict = events.filter(
+      (e) => e.topic === topic && e.countries.includes(country)
+    );
+    // Fall back to all topic events only if genuinely not enough data
+    pool = strict.length >= 5 ? strict : events.filter((e) => e.topic === topic);
+  }
 
-  const shuffled = shuffleArray(pool);
-  return shuffled.slice(0, 5);
+  // Prefer events not recently seen; reset exclusion if pool runs dry
+  const fresh = pool.filter((e) => !excludeSet.has(e.id));
+  const source = fresh.length >= 5 ? fresh : pool;
+
+  return shuffleArray(source).slice(0, 5);
 }
 
 export function sortByYear(evts: GameEvent[]): GameEvent[] {

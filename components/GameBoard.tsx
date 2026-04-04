@@ -13,9 +13,10 @@ interface Props {
   isDaily?: boolean;
   onPlayAgain: () => void;
   onGoHome: () => void;
+  onGameComplete?: () => void;
 }
 
-export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome }: Props) {
+export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGameComplete }: Props) {
   const [items, setItems] = useState<GameEvent[]>(events);
   const [submitted, setSubmitted] = useState(false);
   const [finalStreak, setFinalStreak] = useState<number | null>(null);
@@ -36,6 +37,7 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome }: Pr
 
   function handleSubmit() {
     setSubmitted(true);
+    onGameComplete?.();
     if (isDaily) {
       const s = recordDailyCompletion();
       setFinalStreak(s);

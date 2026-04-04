@@ -5,18 +5,20 @@ import { Topic, CountryCode } from '@/types/game';
 import { TOPICS, COUNTRIES } from '@/lib/gameUtils';
 import { getStreakData } from '@/lib/streak';
 import Logo from './Logo';
+import { Title } from '@/lib/titles';
 
 interface Props {
   currentTopic: Topic;
   currentCountry: CountryCode;
   isDaily: boolean;
+  titleProgress: { title: Title; nextTitle: Title | null; gamesPlayed: number } | null;
   onSelectTopic: (t: Topic) => void;
   onSelectCountry: (c: CountryCode) => void;
   onGoDaily: () => void;
 }
 
 export default function GameNav({
-  currentTopic, currentCountry, isDaily,
+  currentTopic, currentCountry, isDaily, titleProgress,
   onSelectTopic, onSelectCountry, onGoDaily,
 }: Props) {
   const [streak, setStreak] = useState(0);
@@ -53,8 +55,15 @@ export default function GameNav({
     <header className="backdrop-blur-md bg-white/5 border-b border-white/10">
       <div className="max-w-2xl mx-auto px-6 pt-7 pb-5 flex flex-col items-center gap-5">
 
-        {/* Logo */}
-        <Logo />
+        {/* Logo + title badge */}
+        <div className="flex flex-col items-center gap-1.5">
+          <Logo />
+          {titleProgress && (
+            <span className="text-[11px] text-white/40 font-medium tracking-wide">
+              {titleProgress.title.emoji} {titleProgress.title.name} · {titleProgress.gamesPlayed} games
+            </span>
+          )}
+        </div>
 
         {/* Topic tabs + Daily */}
         <div className="flex gap-2 flex-wrap justify-center">
