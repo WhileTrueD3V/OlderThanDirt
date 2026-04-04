@@ -33,6 +33,20 @@ export default function GameNav({
 
   // Arrow key navigation for the country slider
   useEffect(() => {
+    function smoothScroll(container: HTMLElement, to: number, duration = 260) {
+      const from = container.scrollLeft;
+      const delta = to - from;
+      if (Math.abs(delta) < 1) return;
+      const start = performance.now();
+      const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+      const tick = (now: number) => {
+        const t = Math.min((now - start) / duration, 1);
+        container.scrollLeft = from + delta * easeOutCubic(t);
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+
     function handleKey(e: KeyboardEvent) {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       const currentIndex = COUNTRIES.findIndex((c) => c.code === currentCountry);
@@ -40,21 +54,26 @@ export default function GameNav({
         ? Math.min(currentIndex + 1, COUNTRIES.length - 1)
         : Math.max(currentIndex - 1, 0);
       if (next === currentIndex) return;
-      // Scroll first (before React re-render), then update state
-      const container = scrollRef.current;
-      if (container) {
-        const buttons = container.querySelectorAll('button');
-        const btn = buttons[next] as HTMLElement | undefined;
-        if (btn) {
-          const { left: bLeft, right: bRight } = btn.getBoundingClientRect();
-          const { left: cLeft, right: cRight } = container.getBoundingClientRect();
-          if (bLeft < cLeft || bRight > cRight) {
-            btn.scrollIntoView({ behavior: 'instant', inline: 'nearest', block: 'nearest' });
-          }
-        }
-      }
+
+      // 1. Update selection immediately (feels instant)
       onSelectCountry(COUNTRIES[next].code);
+
+      // 2. Smooth-scroll only if the target flag isn't fully visible
+      const container = scrollRef.current;
+      if (!container) return;
+      const buttons = container.querySelectorAll('button');
+      const btn = buttons[next] as HTMLElement | undefined;
+      if (!btn) return;
+      const { left: bLeft, right: bRight } = btn.getBoundingClientRect();
+      const { left: cLeft, right: cRight } = container.getBoundingClientRect();
+      const pad = 16;
+      if (bLeft < cLeft) {
+        smoothScroll(container, container.scrollLeft - (cLeft - bLeft) - pad);
+      } else if (bRight > cRight) {
+        smoothScroll(container, container.scrollLeft + (bRight - cRight) + pad);
+      }
     }
+
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [currentCountry, onSelectCountry]);
