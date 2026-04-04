@@ -95,6 +95,10 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
+                        style={{
+                          ...provided.draggableProps.style,
+                          transitionDuration: snapshot.isDropAnimating ? '0.001s' : undefined,
+                        }}
                         className={`
                           flex items-center gap-3 rounded-2xl border p-3.5 transition-colors duration-100 select-none
                           ${snapshot.isDragging ? 'bg-white/25 border-white/40 shadow-2xl shadow-black/20'
