@@ -1,0 +1,91 @@
+import { GameEvent, Topic, CountryCode, CountryOption, TopicOption } from '@/types/game';
+import { events } from '@/data/events';
+
+export const COUNTRIES: CountryOption[] = [
+  { code: 'global', name: 'Worldwide', flag: '🌍' },
+  { code: 'us', name: 'United States', flag: '🇺🇸' },
+  { code: 'uk', name: 'United Kingdom', flag: '🇬🇧' },
+  { code: 'fr', name: 'France', flag: '🇫🇷' },
+  { code: 'jp', name: 'Japan', flag: '🇯🇵' },
+  { code: 'de', name: 'Germany', flag: '🇩🇪' },
+  { code: 'it', name: 'Italy', flag: '🇮🇹' },
+  { code: 'es', name: 'Spain', flag: '🇪🇸' },
+  { code: 'au', name: 'Australia', flag: '🇦🇺' },
+  { code: 'br', name: 'Brazil', flag: '🇧🇷' },
+  { code: 'cn', name: 'China', flag: '🇨🇳' },
+];
+
+export const TOPICS: TopicOption[] = [
+  {
+    id: 'food',
+    label: 'Food & Drink',
+    emoji: '🍕',
+    description: 'Chocolate bars, instant ramen, champagne — which came first?',
+  },
+  {
+    id: 'inventions',
+    label: 'Inventions',
+    emoji: '💡',
+    description: 'The light bulb, the iPhone, the printing press — in what order?',
+  },
+  {
+    id: 'popculture',
+    label: 'Pop Culture',
+    emoji: '🎬',
+    description: 'Star Wars, The Simpsons, Pokémon — can you sort them in time?',
+  },
+];
+
+function shuffleArray<T>(array: T[]): T[] {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+export function getEventsForGame(topic: Topic, country: CountryCode): GameEvent[] {
+  // Events matching topic AND country (or global)
+  const filtered = events.filter(
+    (e) =>
+      e.topic === topic &&
+      (e.countries.includes(country) || e.countries.includes('global'))
+  );
+
+  // Fallback: if fewer than 5, use all events of that topic
+  const pool = filtered.length >= 5 ? filtered : events.filter((e) => e.topic === topic);
+
+  const shuffled = shuffleArray(pool);
+  return shuffled.slice(0, 5);
+}
+
+export function sortByYear(evts: GameEvent[]): GameEvent[] {
+  return [...evts].sort((a, b) => a.year - b.year);
+}
+
+export function calculateScore(playerOrder: GameEvent[], correctOrder: GameEvent[]): number {
+  return playerOrder.filter((event, idx) => event.id === correctOrder[idx].id).length;
+}
+
+export function formatYear(year: number): string {
+  if (year < 0) return `${Math.abs(year)} BC`;
+  return String(year);
+}
+
+export function getScoreMessage(score: number): string {
+  if (score === 5) return 'Perfect! You\'re a history genius 🏆';
+  if (score === 4) return 'So close! One out of place 🎯';
+  if (score === 3) return 'Not bad! Half right 🧐';
+  if (score === 2) return 'History is trickier than you think 😅';
+  if (score === 1) return 'One right is better than none 😬';
+  return 'A clean sweep... for history 😂';
+}
+
+export function getCountryLabel(code: CountryCode): string {
+  return COUNTRIES.find((c) => c.code === code)?.name ?? code.toUpperCase();
+}
+
+export function getTopicLabel(id: Topic): string {
+  return TOPICS.find((t) => t.id === id)?.label ?? id;
+}
