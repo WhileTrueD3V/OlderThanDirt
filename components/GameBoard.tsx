@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { GameEvent, Topic, CountryCode } from '@/types/game';
-import { sortByYear, calculateScore, formatYear, getScoreMessage, getCountryLabel, getTopicLabel } from '@/lib/gameUtils';
+import { sortByYear, calculateScore, formatYear, getScoreMessage } from '@/lib/gameUtils';
 
 interface Props {
   events: GameEvent[];
@@ -20,64 +20,44 @@ export default function GameBoard({ events, topic, country }: Props) {
 
   const score = submitted ? calculateScore(items, correctOrder) : 0;
 
-  const onDragEnd = useCallback((result: DropResult) => {
-    if (!result.destination || submitted) return;
-    const reordered = [...items];
-    const [removed] = reordered.splice(result.source.index, 1);
-    reordered.splice(result.destination.index, 0, removed);
-    setItems(reordered);
-  }, [items, submitted]);
-
-  function handleSubmit() {
-    setSubmitted(true);
-  }
-
-  function handlePlayAgain() {
-    router.refresh();
-  }
-
-  function handleHome() {
-    router.push('/');
-  }
+  const onDragEnd = useCallback(
+    (result: DropResult) => {
+      if (!result.destination || submitted) return;
+      const reordered = [...items];
+      const [removed] = reordered.splice(result.source.index, 1);
+      reordered.splice(result.destination.index, 0, removed);
+      setItems(reordered);
+    },
+    [items, submitted]
+  );
 
   return (
-    <div className="max-w-2xl mx-auto w-full">
-      {/* Header badge */}
-      <div className="flex items-center gap-3 mb-8 flex-wrap">
-        <span className="bg-orange-100 text-orange-700 text-sm font-semibold px-3 py-1 rounded-full">
-          {getTopicLabel(topic)}
-        </span>
-        <span className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-full">
-          {getCountryLabel(country)}
-        </span>
-      </div>
-
-      {/* Instruction */}
-      {!submitted && (
-        <p className="text-gray-500 text-sm mb-5 leading-relaxed">
-          Drag the cards into order — <strong className="text-gray-700">oldest at the top, newest at the bottom.</strong>
-        </p>
-      )}
-
+    <div className="max-w-xl mx-auto w-full">
       {/* Score banner */}
       {submitted && (
         <div
-          className={`rounded-2xl p-5 mb-6 flex items-center gap-4 ${
+          className={`rounded-2xl p-4 mb-6 flex items-center gap-4 border ${
             score === 5
-              ? 'bg-green-50 border border-green-200'
+              ? 'bg-green-950/40 border-green-800'
               : score >= 3
-              ? 'bg-amber-50 border border-amber-200'
-              : 'bg-red-50 border border-red-200'
+              ? 'bg-amber-950/40 border-amber-800'
+              : 'bg-red-950/40 border-red-900'
           }`}
         >
-          <div className={`text-4xl font-black ${
-            score === 5 ? 'text-green-600' : score >= 3 ? 'text-amber-600' : 'text-red-600'
-          }`}>
+          <div
+            className={`text-4xl font-black tabular-nums ${
+              score === 5
+                ? 'text-green-400'
+                : score >= 3
+                ? 'text-amber-400'
+                : 'text-red-400'
+            }`}
+          >
             {score}/5
           </div>
           <div>
-            <div className="font-semibold text-gray-900">{getScoreMessage(score)}</div>
-            <div className="text-sm text-gray-500 mt-0.5">
+            <div className="font-semibold text-white">{getScoreMessage(score)}</div>
+            <div className="text-sm text-[#666] mt-0.5">
               {score === 5
                 ? 'All 5 in the right order'
                 : `${score} card${score === 1 ? '' : 's'} in the correct position`}
@@ -86,14 +66,23 @@ export default function GameBoard({ events, topic, country }: Props) {
         </div>
       )}
 
-      {/* Drag-and-drop list */}
+      {/* EARLIEST label */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex-1 h-px bg-[#2a2a2a]" />
+        <span className="text-[11px] font-semibold uppercase tracking-widest text-[#555]">
+          Earliest
+        </span>
+        <div className="flex-1 h-px bg-[#2a2a2a]" />
+      </div>
+
+      {/* Cards */}
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="game-board">
           {(provided) => (
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className="flex flex-col gap-3"
+              className="flex flex-col gap-2"
             >
               {items.map((event, index) => {
                 const correctPos = submitted
@@ -115,61 +104,62 @@ export default function GameBoard({ events, topic, country }: Props) {
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
                         className={`
-                          rounded-2xl border-2 bg-white p-4 flex items-start gap-4 transition-all duration-150 select-none
-                          ${snapshot.isDragging ? 'shadow-2xl scale-[1.02] border-orange-400' : 'shadow-sm'}
-                          ${isCorrect ? 'border-green-400 bg-green-50' : ''}
-                          ${isWrong ? 'border-red-300 bg-red-50' : ''}
-                          ${!submitted && !snapshot.isDragging ? 'border-gray-200 cursor-grab active:cursor-grabbing hover:border-orange-300 hover:shadow-md' : ''}
+                          flex items-center gap-3 rounded-xl border p-3 transition-all duration-100 select-none
+                          ${snapshot.isDragging
+                            ? 'border-[#e8640c] bg-[#1c1c1c] shadow-2xl shadow-black/60 scale-[1.02]'
+                            : isCorrect
+                            ? 'border-green-700 bg-green-950/30'
+                            : isWrong
+                            ? 'border-red-900 bg-red-950/20'
+                            : 'border-[#2a2a2a] bg-[#1c1c1c] hover:border-[#3a3a3a]'
+                          }
+                          ${!submitted && !snapshot.isDragging ? 'cursor-grab active:cursor-grabbing' : ''}
                         `}
                       >
-                        {/* Position number */}
-                        <div
-                          className={`
-                            flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mt-0.5
-                            ${isCorrect ? 'bg-green-500 text-white' : ''}
-                            ${isWrong ? 'bg-red-400 text-white' : ''}
-                            ${!submitted ? 'bg-gray-100 text-gray-500' : ''}
-                          `}
-                        >
-                          {submitted ? (isCorrect ? '✓' : '✗') : index + 1}
+                        {/* Emoji thumbnail */}
+                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-[#252525] flex items-center justify-center text-2xl">
+                          {event.emoji}
                         </div>
 
-                        {/* Emoji */}
-                        <div className="text-2xl flex-shrink-0 mt-0.5">{event.emoji}</div>
-
-                        {/* Content */}
+                        {/* Text */}
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-gray-900 leading-snug">{event.title}</div>
-                          <div className="text-sm text-gray-500 mt-1 leading-snug">{event.description}</div>
-
-                          {/* Year reveal */}
+                          <div className="font-semibold text-white text-sm leading-snug">
+                            {event.title}
+                          </div>
                           {submitted && (
-                            <div
-                              className={`inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-bold
-                                ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}
-                              `}
-                            >
-                              {formatYear(event.year)}
+                            <div className="flex items-center gap-2 mt-1">
+                              <span
+                                className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                                  isCorrect
+                                    ? 'bg-green-900/60 text-green-400'
+                                    : 'bg-[#252525] text-[#888]'
+                                }`}
+                              >
+                                {formatYear(event.year)}
+                              </span>
+                              {isWrong && (
+                                <span className="text-xs text-[#555]">
+                                  should be #{correctPos + 1}
+                                </span>
+                              )}
                             </div>
                           )}
                         </div>
 
-                        {/* Drag handle indicator (hidden after submit) */}
-                        {!submitted && (
-                          <div className="flex-shrink-0 flex flex-col gap-1 mt-2">
-                            {[0, 1, 2].map((i) => (
-                              <div key={i} className="w-4 h-0.5 bg-gray-300 rounded-full" />
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Correct year position hint after submit */}
-                        {submitted && isWrong && (
-                          <div className="flex-shrink-0 text-xs text-gray-400 text-right">
-                            <div>Should be</div>
-                            <div className="font-semibold text-gray-600">#{correctPos + 1}</div>
-                          </div>
-                        )}
+                        {/* Right side: status or drag handle */}
+                        <div className="flex-shrink-0">
+                          {submitted ? (
+                            <span className={`text-lg ${isCorrect ? 'text-green-400' : 'text-red-500'}`}>
+                              {isCorrect ? '✓' : '✗'}
+                            </span>
+                          ) : (
+                            <div className="flex flex-col gap-1 px-1">
+                              {[0, 1, 2].map((i) => (
+                                <div key={i} className="w-3.5 h-0.5 bg-[#3a3a3a] rounded-full" />
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </Draggable>
@@ -181,32 +171,39 @@ export default function GameBoard({ events, topic, country }: Props) {
         </Droppable>
       </DragDropContext>
 
-      {/* Action buttons */}
-      <div className="mt-8 flex flex-col sm:flex-row gap-3">
-        {!submitted ? (
-          <button
-            onClick={handleSubmit}
-            className="flex-1 sm:flex-none px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all active:scale-95 cursor-pointer"
-          >
-            Lock in my order →
-          </button>
-        ) : (
-          <>
-            <button
-              onClick={handlePlayAgain}
-              className="flex-1 sm:flex-none px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-orange-200 transition-all active:scale-95 cursor-pointer"
-            >
-              Play again
-            </button>
-            <button
-              onClick={handleHome}
-              className="flex-1 sm:flex-none px-8 py-4 bg-white hover:bg-gray-50 text-gray-700 font-semibold text-lg rounded-2xl border-2 border-gray-200 hover:border-gray-300 transition-all active:scale-95 cursor-pointer"
-            >
-              Change topic
-            </button>
-          </>
-        )}
+      {/* LATEST label */}
+      <div className="flex items-center gap-3 mt-4 mb-8">
+        <div className="flex-1 h-px bg-[#2a2a2a]" />
+        <span className="text-[11px] font-semibold uppercase tracking-widest text-[#555]">
+          Latest
+        </span>
+        <div className="flex-1 h-px bg-[#2a2a2a]" />
       </div>
+
+      {/* Action buttons */}
+      {!submitted ? (
+        <button
+          onClick={() => setSubmitted(true)}
+          className="w-full py-4 bg-[#e8640c] hover:bg-[#d45a0a] text-white font-bold text-base rounded-xl transition-all active:scale-95 cursor-pointer shadow-lg shadow-[#e8640c]/20"
+        >
+          Lock it in
+        </button>
+      ) : (
+        <div className="flex gap-3">
+          <button
+            onClick={() => router.refresh()}
+            className="flex-1 py-4 bg-[#e8640c] hover:bg-[#d45a0a] text-white font-bold text-base rounded-xl transition-all active:scale-95 cursor-pointer"
+          >
+            Play again
+          </button>
+          <button
+            onClick={() => router.push('/')}
+            className="flex-1 py-4 bg-[#1c1c1c] hover:bg-[#252525] text-white font-semibold text-base rounded-xl border border-[#2a2a2a] hover:border-[#3a3a3a] transition-all active:scale-95 cursor-pointer"
+          >
+            Change topic
+          </button>
+        </div>
+      )}
     </div>
   );
 }
