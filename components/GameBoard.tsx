@@ -96,8 +96,8 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
                         className={`
-                          flex items-center gap-3 rounded-2xl border p-3.5 transition-all duration-100 select-none backdrop-blur-md
-                          ${snapshot.isDragging ? 'bg-white/25 border-white/40 shadow-2xl shadow-black/20 scale-[1.02]'
+                          flex items-center gap-3 rounded-2xl border p-3.5 transition-colors duration-100 select-none backdrop-blur-md
+                          ${snapshot.isDragging ? 'bg-white/25 border-white/40 shadow-2xl shadow-black/20'
                             : isCorrect ? 'bg-teal-300/15 border-teal-300/30'
                             : isWrong ? 'bg-red-300/10 border-red-200/20'
                             : 'bg-white/10 border-white/15 hover:bg-white/15 hover:border-white/25'}
