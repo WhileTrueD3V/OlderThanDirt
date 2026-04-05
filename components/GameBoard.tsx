@@ -39,7 +39,12 @@ function Card({
       dragTransition={{ bounceStiffness: 600, bounceDamping: 40 }}
       whileDrag={{ scale: 0.97, boxShadow: '0 16px 40px rgba(0,0,0,0.25)', zIndex: 50 }}
       whileTap={submitted ? {} : { scale: 0.97 }}
-      transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
+      transition={{
+        duration: 0.15,
+        ease: [0.2, 0, 0, 1],
+        scale: { duration: 0.08, ease: 'easeOut' },
+        boxShadow: { duration: 0.08 },
+      }}
       className={`
         flex items-center gap-3 rounded-2xl border p-3.5 select-none
         ${submitted ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}
