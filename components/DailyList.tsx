@@ -8,6 +8,12 @@ interface Props {
   onSelectDate: (dateStr: string) => void;
 }
 
+// Deterministic fake base per date — same number every time, 300–500 range
+function getFakeBase(dateStr: string): number {
+  const hash = dateStr.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return 300 + (hash % 201);
+}
+
 function formatDate(dateStr: string): string {
   const [y, m, d] = dateStr.split('-').map(Number);
   const date = new Date(Date.UTC(y, m - 1, d));
@@ -41,7 +47,8 @@ export default function DailyList({ onSelectDate }: Props) {
         const topicInfo = TOPICS.find((t) => t.id === topic)!;
         const isToday = dateStr === today;
         const done = completed.has(dateStr);
-        const playerCount = counts[dateStr] ?? 0;
+        const realCount = counts[dateStr] ?? 0;
+        const playerCount = getFakeBase(dateStr) + realCount;
 
         return (
           <button
