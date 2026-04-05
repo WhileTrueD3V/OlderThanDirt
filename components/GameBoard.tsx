@@ -104,9 +104,13 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                         onMouseUp={() => setPressedId(null)}
                         onMouseLeave={() => setPressedId(null)}
                       >
-                        <div className={`
-                          flex items-center gap-3 rounded-2xl border p-3.5 transition-[colors,transform] duration-75 select-none
-                          ${(pressedId === event.id || snapshot.isDragging) ? 'scale-[0.96]' : 'scale-100'}
+                        <div
+                          style={{
+                            transition: 'transform 80ms ease-out, background-color 100ms ease, border-color 100ms ease, box-shadow 100ms ease',
+                          }}
+                          className={`
+                          flex items-center gap-3 rounded-2xl border p-3.5 select-none
+                          ${(pressedId === event.id || snapshot.isDragging) ? 'scale-[0.96]' : ''}
                           ${snapshot.isDragging ? 'bg-white/25 border-white/40 shadow-2xl shadow-black/20'
                             : isCorrect ? 'bg-teal-300/15 border-teal-300/30'
                             : isWrong ? 'bg-red-300/10 border-red-200/20'
