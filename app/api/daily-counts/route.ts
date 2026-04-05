@@ -7,17 +7,16 @@ export async function GET(req: NextRequest) {
     if (dates.length === 0) return NextResponse.json({});
 
     const redis = getRedis();
-    const pipeline = redis.pipeline();
-    for (const d of dates) {
-      pipeline.get(`otd:daily:${d}:count`);
-    }
-    const results = await pipeline.exec();
+    const values = await Promise.all(
+      dates.map((d) => redis.get<number>(`otd:daily:${d}:count`))
+    );
 
     const counts: Record<string, number> = {};
     dates.forEach((d, i) => {
-      counts[d] = Number(results[i] ?? 0);
+      counts[d] = Number(values[i] ?? 0);
     });
 
+    console.log('[daily-counts]', counts);
     return NextResponse.json(counts);
   } catch (err) {
     console.error('[daily-counts]', err);

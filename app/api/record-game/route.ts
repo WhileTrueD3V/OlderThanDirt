@@ -22,14 +22,14 @@ export async function POST(req: NextRequest) {
     };
 
     const redis = getRedis();
-    const pipeline = redis.pipeline();
-    pipeline.lpush('otd:games', JSON.stringify(record));
-    pipeline.ltrim('otd:games', 0, MAX_RECORDS - 1);
-    // Per-date player count for daily puzzles
+
+    await redis.lpush('otd:games', JSON.stringify(record));
+    await redis.ltrim('otd:games', 0, MAX_RECORDS - 1);
+
     if (isDaily && dailyDate && typeof dailyDate === 'string') {
-      pipeline.incr(`otd:daily:${dailyDate}:count`);
+      const newCount = await redis.incr(`otd:daily:${dailyDate}:count`);
+      console.log(`[record-game] daily ${dailyDate} count → ${newCount}`);
     }
-    await pipeline.exec();
 
     return NextResponse.json({ ok: true });
   } catch (err) {
