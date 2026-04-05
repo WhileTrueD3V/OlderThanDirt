@@ -4,7 +4,6 @@ import { useState, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { GameEvent, Topic, CountryCode } from '@/types/game';
 import { sortByYear, calculateScore, formatYear, getScoreMessage } from '@/lib/gameUtils';
-import { recordDailyCompletion } from '@/lib/streak';
 
 interface Props {
   events: GameEvent[];
@@ -19,7 +18,6 @@ interface Props {
 export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGameComplete }: Props) {
   const [items, setItems] = useState<GameEvent[]>(events);
   const [submitted, setSubmitted] = useState(false);
-  const [finalStreak, setFinalStreak] = useState<number | null>(null);
   const [correctOrder] = useState<GameEvent[]>(() => sortByYear(events));
   const [pressedId, setPressedId] = useState<string | null>(null);
 
@@ -39,10 +37,6 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
   function handleSubmit() {
     setSubmitted(true);
     onGameComplete?.();
-    if (isDaily) {
-      const s = recordDailyCompletion();
-      setFinalStreak(s);
-    }
   }
 
   return (
@@ -181,13 +175,6 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
         </button>
       ) : isDaily ? (
         <div className="flex flex-col items-center gap-3">
-          {finalStreak !== null && (
-            <div className="text-center py-3">
-              <div className="text-4xl mb-1">🔥</div>
-              <div className="text-white font-bold text-lg">{finalStreak} day streak!</div>
-              <div className="text-white/40 text-sm mt-1">Come back tomorrow to keep it going.</div>
-            </div>
-          )}
           <button
             onClick={onGoHome}
             className="w-full py-4 backdrop-blur-md bg-white/15 hover:bg-white/22 border border-white/25 text-white font-semibold text-base rounded-2xl transition-all active:scale-95 cursor-pointer"

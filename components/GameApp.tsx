@@ -5,8 +5,10 @@ import { Topic, CountryCode } from '@/types/game';
 import { GameEvent } from '@/types/game';
 import { getEventsForGame, getDailyEvents, getDailyTopic, getTodayUTC, TOPICS } from '@/lib/gameUtils';
 import { recordGame, getProgress, Title } from '@/lib/titles';
+import { markDateCompleted } from '@/lib/dailyRecord';
 import GameNav from './GameNav';
 import GameBoard from './GameBoard';
+import DailyList from './DailyList';
 
 interface Props {
   initialTopic: Topic;
@@ -20,10 +22,12 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
   const [topic, setTopic] = useState<Topic>(initialTopic);
   const [country, setCountry] = useState<CountryCode>(initialCountry);
   const [isDaily, setIsDaily] = useState(initialIsDaily);
+  // null = showing daily list, string = playing that date's puzzle
+  const [dailyDate, setDailyDate] = useState<string | null>(null);
   const [gameKey, setGameKey] = useState('init');
   const [usedIds, setUsedIds] = useState<string[]>([]);
   const [currentEvents, setCurrentEvents] = useState<GameEvent[]>(() =>
-    initialIsDaily ? getDailyEvents(initialTopic) : getEventsForGame(initialTopic, initialCountry, [])
+    getEventsForGame(initialTopic, initialCountry, [])
   );
 
   // Title unlock notification
@@ -36,17 +40,12 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
     setTitleProgress(getProgress());
   }, []);
 
-  function loadEvents(t: Topic, c: CountryCode, daily: boolean, prevUsed: string[]) {
-    const evts = daily ? getDailyEvents(t) : getEventsForGame(t, c, prevUsed);
-    setCurrentEvents(evts);
-    return evts;
-  }
-
   function selectTopic(t: Topic) {
     startTransition(() => {
       const evts = getEventsForGame(t, country, []);
       setTopic(t);
       setIsDaily(false);
+      setDailyDate(null);
       setCurrentEvents(evts);
       setUsedIds(evts.map((e) => e.id));
       setGameKey(Math.random().toString(36).slice(2));
@@ -58,6 +57,7 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
       const evts = getEventsForGame(topic, c, []);
       setCountry(c);
       setIsDaily(false);
+      setDailyDate(null);
       setCurrentEvents(evts);
       setUsedIds(evts.map((e) => e.id));
       setGameKey(Math.random().toString(36).slice(2));
@@ -65,13 +65,19 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
   }
 
   function goDaily() {
+    // Just open the daily list — don't auto-load a puzzle
+    setIsDaily(true);
+    setDailyDate(null);
+  }
+
+  function selectDailyDate(dateStr: string) {
     startTransition(() => {
-      const dt = getDailyTopic();
-      const evts = getDailyEvents(dt);
-      setTopic(dt);
-      setIsDaily(true);
+      const t = getDailyTopic(dateStr);
+      const evts = getDailyEvents(dateStr);
+      setTopic(t);
+      setDailyDate(dateStr);
       setCurrentEvents(evts);
-      setGameKey(`daily-${getTodayUTC()}`);
+      setGameKey(`daily-${dateStr}`);
     });
   }
 
@@ -79,6 +85,7 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
     const newTitle = recordGame();
     setTitleProgress(getProgress());
     if (newTitle) setUnlockedTitle(newTitle);
+    if (isDaily && dailyDate) markDateCompleted(dailyDate);
   }
 
   function playAgain() {
@@ -92,6 +99,7 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
   }
 
   const topicInfo = TOPICS.find((t) => t.id === topic)!;
+  const showDailyList = isDaily && dailyDate === null;
 
   return (
     <>
@@ -122,34 +130,59 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
       )}
 
       <div className="max-w-xl mx-auto px-5 py-10">
-        {/* Puzzle title */}
-        <div className="text-center mb-10">
-          {isDaily ? (
-            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 backdrop-blur-md rounded-full px-4 py-1.5 mb-4">
-              <span>🔥</span>
-              <span className="text-white/80 text-xs font-semibold uppercase tracking-widest">
-                Daily Challenge
-              </span>
+        {showDailyList ? (
+          <>
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 backdrop-blur-md rounded-full px-4 py-1.5 mb-4">
+                <span>🔥</span>
+                <span className="text-white/80 text-xs font-semibold uppercase tracking-widest">
+                  Daily Puzzles
+                </span>
+              </div>
+              <p className="text-white/40 text-sm">Pick a day to play</p>
             </div>
-          ) : (
-            <p className="text-white/35 text-xs uppercase tracking-widest mb-3">Sort by date</p>
-          )}
-          <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight">
-            <span className="text-white/20">· </span>
-            {topicInfo.label}
-            <span className="text-white/20"> ·</span>
-          </h1>
-        </div>
+            <DailyList onSelectDate={selectDailyDate} />
+          </>
+        ) : (
+          <>
+            {/* Puzzle title */}
+            <div className="text-center mb-10">
+              {isDaily && dailyDate ? (
+                <div className="flex flex-col items-center gap-2 mb-4">
+                  <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 backdrop-blur-md rounded-full px-4 py-1.5">
+                    <span>🔥</span>
+                    <span className="text-white/80 text-xs font-semibold uppercase tracking-widest">
+                      Daily · {new Date(dailyDate + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' })}
+                    </span>
+                  </div>
+                  <button
+                    onClick={goDaily}
+                    className="text-white/35 text-xs hover:text-white/60 cursor-pointer transition-colors"
+                  >
+                    ← All dailies
+                  </button>
+                </div>
+              ) : (
+                <p className="text-white/35 text-xs uppercase tracking-widest mb-3">Sort by date</p>
+              )}
+              <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight">
+                <span className="text-white/20">· </span>
+                {topicInfo.label}
+                <span className="text-white/20"> ·</span>
+              </h1>
+            </div>
 
-        <div className="fade-in" key={gameKey}>
-          <GameBoard
-            events={currentEvents}
-            isDaily={isDaily}
-            onPlayAgain={playAgain}
-            onGoHome={() => selectTopic('popculture')}
-            onGameComplete={handleGameComplete}
-          />
-        </div>
+            <div className="fade-in" key={gameKey}>
+              <GameBoard
+                events={currentEvents}
+                isDaily={isDaily}
+                onPlayAgain={playAgain}
+                onGoHome={goDaily}
+                onGameComplete={handleGameComplete}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <footer className="max-w-xl mx-auto px-5 pb-10 text-center">

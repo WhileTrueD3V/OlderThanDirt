@@ -1,5 +1,5 @@
 import GameApp from '@/components/GameApp';
-import { getDailyTopic } from '@/lib/gameUtils';
+import { getDailyTopic, getTodayUTC } from '@/lib/gameUtils';
 import { Topic, CountryCode } from '@/types/game';
 
 const VALID_TOPICS: Topic[] = ['food', 'inventions', 'popculture'];
@@ -16,7 +16,7 @@ export default async function Home({ searchParams }: PageProps) {
 
   const isDaily = params.daily === 'true';
   const initialTopic = isDaily
-    ? getDailyTopic()
+    ? getDailyTopic(getTodayUTC())
     : (VALID_TOPICS.includes(params.topic as Topic) ? (params.topic as Topic) : 'popculture');
   const initialCountry = (VALID_COUNTRIES.includes(params.country as CountryCode)
     ? params.country as CountryCode

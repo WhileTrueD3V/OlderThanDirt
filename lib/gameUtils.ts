@@ -71,21 +71,40 @@ export function getTodayUTC(): string {
   return `${y}-${m}-${day}`;
 }
 
-export function getDailyTopic(): Topic {
-  const dayNum = Math.floor(Date.now() / 86_400_000); // UTC days since epoch
-  const topics: Topic[] = ['food', 'inventions', 'popculture'];
-  return topics[dayNum % 3];
+/** YYYYMMDD integer from a date string like "2026-04-04" */
+function dateStrToSeed(dateStr: string): number {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return y * 10000 + m * 100 + d;
 }
 
-export function getDailyEvents(topic: Topic): GameEvent[] {
+/** Days since epoch for a date string */
+function dateStrToDayNum(dateStr: string): number {
+  return Math.floor(new Date(dateStr + 'T00:00:00Z').getTime() / 86_400_000);
+}
+
+export function getDailyTopic(dateStr: string): Topic {
+  const topics: Topic[] = ['food', 'inventions', 'popculture'];
+  return topics[dateStrToDayNum(dateStr) % 3];
+}
+
+export function getDailyEvents(dateStr: string): GameEvent[] {
+  const topic = getDailyTopic(dateStr);
   const pool = events.filter((e) => e.topic === topic);
-  // Seed: numeric YYYYMMDD — same for everyone on the same UTC day
-  const d = new Date();
-  const seed =
-    d.getUTCFullYear() * 10000 +
-    (d.getUTCMonth() + 1) * 100 +
-    d.getUTCDate();
-  return seededShuffle(pool, seed).slice(0, 5);
+  return seededShuffle(pool, dateStrToSeed(dateStr)).slice(0, 5);
+}
+
+/** Returns the last `count` UTC date strings (today first) */
+export function getAvailableDailyDates(count = 30): string[] {
+  const dates: string[] = [];
+  const now = new Date();
+  for (let i = 0; i < count; i++) {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i));
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    dates.push(`${y}-${m}-${day}`);
+  }
+  return dates;
 }
 
 export function getEventsForGame(

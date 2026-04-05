@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Topic, CountryCode } from '@/types/game';
 import { TOPICS, COUNTRIES } from '@/lib/gameUtils';
-import { getStreakData } from '@/lib/streak';
 import Logo from './Logo';
 import { Title } from '@/lib/titles';
 
@@ -21,16 +20,8 @@ export default function GameNav({
   currentTopic, currentCountry, isDaily, titleProgress,
   onSelectTopic, onSelectCountry, onGoDaily,
 }: Props) {
-  const [streak, setStreak] = useState(0);
-  const [todayDone, setTodayDone] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const { streak, todayDone } = getStreakData();
-    setStreak(streak);
-    setTodayDone(todayDone);
-  }, [isDaily]);
 
   // Arrow key navigation for the country slider
   useEffect(() => {
@@ -136,14 +127,6 @@ export default function GameNav({
           >
             <span>🔥</span>
             <span>Daily</span>
-            {streak > 0 && (
-              <span className="bg-white/20 text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none">
-                {streak}
-              </span>
-            )}
-            {todayDone && !isDaily && (
-              <span className="w-2 h-2 bg-teal-300 rounded-full" />
-            )}
           </button>
         </div>
 
