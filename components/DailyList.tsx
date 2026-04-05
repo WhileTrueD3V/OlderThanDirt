@@ -8,10 +8,26 @@ interface Props {
   onSelectDate: (dateStr: string) => void;
 }
 
-// Deterministic fake base per date — same number every time, 300–500 range
+// Pre-assigned fake bases for existing dates
+const FAKE_BASES: Record<string, number> = {
+  '2026-03-30': 347,
+  '2026-03-31': 421,
+  '2026-04-01': 489,
+  '2026-04-02': 312,
+  '2026-04-03': 456,
+  '2026-04-04': 378,
+  '2026-04-05': 433,
+};
+
+// For future dates: mixing hash so nearby dates get varied results
 function getFakeBase(dateStr: string): number {
-  const hash = dateStr.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return 300 + (hash % 201);
+  if (FAKE_BASES[dateStr] !== undefined) return FAKE_BASES[dateStr];
+  let h = 0x811c9dc5;
+  for (let i = 0; i < dateStr.length; i++) {
+    h ^= dateStr.charCodeAt(i);
+    h = (h * 0x01000193) >>> 0;
+  }
+  return 300 + (h % 201);
 }
 
 function formatDate(dateStr: string): string {
