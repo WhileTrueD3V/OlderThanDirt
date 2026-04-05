@@ -5,7 +5,7 @@ import { Topic, CountryCode } from '@/types/game';
 import { GameEvent } from '@/types/game';
 import { getEventsForGame, getDailyEvents, getDailyTopic, getTodayUTC, TOPICS } from '@/lib/gameUtils';
 import { recordGame, getProgress, Title } from '@/lib/titles';
-import { markDateCompleted } from '@/lib/dailyRecord';
+import { markDateCompleted, isDateCompleted } from '@/lib/dailyRecord';
 import { saveGameResult } from '@/lib/gameHistory';
 import GameNav from './GameNav';
 import GameBoard from './GameBoard';
@@ -93,6 +93,7 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
   }
 
   function selectDailyDate(dateStr: string) {
+    if (isDateCompleted(dateStr)) return;
     startTransition(() => {
       const t = getDailyTopic(dateStr);
       const evts = getDailyEvents(dateStr);
@@ -110,7 +111,7 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
     fetch('/api/record-game', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic, country, score, isDaily }),
+      body: JSON.stringify({ topic, country, score, isDaily, dailyDate }),
     }).catch(() => { /* silently ignore if offline */ });
     const newTitle = recordGame(score >= 3);
     setTitleProgress(getProgress());

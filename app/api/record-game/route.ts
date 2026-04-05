@@ -6,7 +6,7 @@ const MAX_RECORDS = 10000;
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { topic, country, score, isDaily } = body;
+    const { topic, country, score, isDaily, dailyDate } = body;
 
     if (!topic || !country || typeof score !== 'number') {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
@@ -22,9 +22,14 @@ export async function POST(req: NextRequest) {
     };
 
     const redis = getRedis();
-    await redis.lpush('otd:games', JSON.stringify(record));
-    // Trim to keep the list bounded
-    await redis.ltrim('otd:games', 0, MAX_RECORDS - 1);
+    const pipeline = redis.pipeline();
+    pipeline.lpush('otd:games', JSON.stringify(record));
+    pipeline.ltrim('otd:games', 0, MAX_RECORDS - 1);
+    // Per-date player count for daily puzzles
+    if (isDaily && dailyDate && typeof dailyDate === 'string') {
+      pipeline.incr(`otd:daily:${dailyDate}:count`);
+    }
+    await pipeline.exec();
 
     return NextResponse.json({ ok: true });
   } catch (err) {
