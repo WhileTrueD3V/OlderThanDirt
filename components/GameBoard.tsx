@@ -37,13 +37,12 @@ function Card({
       dragControls={controls}
       dragElastic={0.08}
       dragTransition={{ bounceStiffness: 600, bounceDamping: 40 }}
-      whileDrag={{ scale: 0.97, boxShadow: '0 16px 40px rgba(0,0,0,0.25)', zIndex: 50 }}
-      whileTap={submitted ? {} : { scale: 0.97 }}
+      whileDrag={{ scale: 0.96, boxShadow: '0 16px 40px rgba(0,0,0,0.25)', zIndex: 50 }}
+      whileTap={submitted ? {} : { scale: 0.96 }}
       transition={{
-        duration: 0.15,
-        ease: [0.2, 0, 0, 1],
-        scale: { duration: 0.08, ease: 'easeOut' },
-        boxShadow: { duration: 0.08 },
+        layout: { duration: 0.15, ease: [0.2, 0, 0, 1] },
+        scale: { type: 'spring', stiffness: 500, damping: 15 },
+        boxShadow: { duration: 0.1 },
       }}
       className={`
         flex items-center gap-3 rounded-2xl border p-3.5 select-none
