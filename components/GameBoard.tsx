@@ -98,7 +98,10 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                         {...provided.dragHandleProps}
                         style={{
                           ...provided.draggableProps.style,
-                          transitionDuration: snapshot.isDropAnimating ? '0.001s' : undefined,
+                          // Kill the library's drop animation entirely — card snaps instantly to slot
+                          transition: snapshot.isDropAnimating
+                            ? 'none'
+                            : provided.draggableProps.style?.transition,
                         }}
                         onMouseDown={() => !submitted && setPressedId(event.id)}
                         onMouseUp={() => setPressedId(null)}
@@ -106,7 +109,10 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                       >
                         <div
                           style={{
-                            transition: 'transform 80ms ease-out, background-color 100ms ease, border-color 100ms ease, box-shadow 100ms ease',
+                            // Also instant on drop so scale doesn't lag behind position
+                            transition: snapshot.isDropAnimating
+                              ? 'none'
+                              : 'transform 80ms ease-out, background-color 100ms ease, border-color 100ms ease, box-shadow 100ms ease',
                           }}
                           className={`
                           flex items-center gap-3 rounded-2xl border p-3.5 select-none
