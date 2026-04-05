@@ -98,9 +98,8 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                         {...provided.dragHandleProps}
                         style={{
                           ...provided.draggableProps.style,
-                          // Fast ease-out drop — feels quick and smooth, not the sluggish default
                           transition: snapshot.isDropAnimating
-                            ? 'transform 120ms ease-out'
+                            ? 'transform 80ms cubic-bezier(0.2, 0, 0, 1)'
                             : provided.draggableProps.style?.transition,
                         }}
                         onMouseDown={() => !submitted && setPressedId(event.id)}
@@ -110,7 +109,7 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                         <div
                           style={{
                             transition: snapshot.isDropAnimating
-                              ? 'transform 120ms ease-out, background-color 100ms ease, border-color 100ms ease'
+                              ? 'transform 80ms cubic-bezier(0.2, 0, 0, 1), background-color 80ms ease, border-color 80ms ease'
                               : 'transform 80ms ease-out, background-color 100ms ease, border-color 100ms ease, box-shadow 100ms ease',
                           }}
                           className={`
