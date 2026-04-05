@@ -5,7 +5,7 @@ import { Reorder, useDragControls, motion } from 'framer-motion';
 import { GameEvent, Topic, CountryCode } from '@/types/game';
 import { sortByYear, calculateScore, formatYear, getScoreMessage, TOPICS, COUNTRIES } from '@/lib/gameUtils';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'olderthandirt.vercel.app';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://olderthandirt.vercel.app';
 
 function buildShareText(
   items: GameEvent[],
@@ -56,7 +56,7 @@ function ShareModal({
 }) {
   const [copied, setCopied] = useState(false);
   const text = buildShareText(items, correctOrder, score, topic, country, isDaily);
-  const url = `https://${SITE_URL}`;
+  const url = SITE_URL;
 
   async function copyText() {
     await navigator.clipboard.writeText(text);
