@@ -10,7 +10,7 @@ interface Props {
   currentTopic: Topic;
   currentCountry: CountryCode;
   isDaily: boolean;
-  titleProgress: { title: Title; nextTitle: Title | null; gamesPlayed: number } | null;
+  titleProgress: { title: Title; nextTitle: Title | null; perfectGames: number } | null;
   onSelectTopic: (t: Topic) => void;
   onSelectCountry: (c: CountryCode) => void;
   onGoDaily: () => void;
@@ -92,7 +92,7 @@ export default function GameNav({
           <Logo />
           {titleProgress && (
             <span className="text-[11px] text-white/40 font-medium tracking-wide">
-              {titleProgress.title.name} · {titleProgress.gamesPlayed} games
+              {titleProgress.title.name} · {titleProgress.perfectGames} perfect
             </span>
           )}
         </div>

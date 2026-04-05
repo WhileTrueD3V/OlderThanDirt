@@ -1,34 +1,40 @@
 export interface Title {
   name: string;
   emoji: string;
-  minGames: number;
+  minPerfect: number;
   description: string;
 }
 
 export const TITLES: Title[] = [
-  { name: 'Novice',      emoji: '🌱', minGames: 0,   description: 'Just getting started' },
-  { name: 'Apprentice',  emoji: '📖', minGames: 10,  description: 'Getting the hang of it' },
-  { name: 'Scholar',     emoji: '🔍', minGames: 30,  description: 'History is starting to click' },
-  { name: 'Historian',   emoji: '📜', minGames: 75,  description: 'You know your dates' },
-  { name: 'Expert',      emoji: '⭐', minGames: 150, description: 'Impressively well-read' },
-  { name: 'Master',      emoji: '🏆', minGames: 300, description: 'A walking encyclopedia' },
-  { name: 'Legend',      emoji: '👑', minGames: 500, description: 'Older than dirt itself' },
+  { name: 'Novice',     emoji: '🌱', minPerfect: 0,   description: 'Just getting started' },
+  { name: 'Apprentice', emoji: '📖', minPerfect: 5,   description: 'Getting the hang of it' },
+  { name: 'Scholar',    emoji: '🔍', minPerfect: 15,  description: 'History is starting to click' },
+  { name: 'Historian',  emoji: '📜', minPerfect: 35,  description: 'You know your dates' },
+  { name: 'Expert',     emoji: '⭐', minPerfect: 75,  description: 'Impressively well-read' },
+  { name: 'Master',     emoji: '🏆', minPerfect: 150, description: 'A walking encyclopedia' },
+  { name: 'Legend',     emoji: '👑', minPerfect: 300, description: 'Older than dirt itself' },
 ];
 
 const KEY = 'otd_progress';
 
 interface Progress {
-  gamesPlayed: number;
-  titleIndex: number; // last notified title index
+  perfectGames: number;
+  titleIndex: number;
 }
 
 function read(): Progress {
-  if (typeof window === 'undefined') return { gamesPlayed: 0, titleIndex: 0 };
+  if (typeof window === 'undefined') return { perfectGames: 0, titleIndex: 0 };
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as Progress) : { gamesPlayed: 0, titleIndex: 0 };
+    if (!raw) return { perfectGames: 0, titleIndex: 0 };
+    const parsed = JSON.parse(raw);
+    // Migrate old format (gamesPlayed) to new (perfectGames)
+    return {
+      perfectGames: parsed.perfectGames ?? 0,
+      titleIndex: parsed.titleIndex ?? 0,
+    };
   } catch {
-    return { gamesPlayed: 0, titleIndex: 0 };
+    return { perfectGames: 0, titleIndex: 0 };
   }
 }
 
@@ -36,22 +42,27 @@ function write(p: Progress) {
   localStorage.setItem(KEY, JSON.stringify(p));
 }
 
-export function getProgress(): Progress & { title: Title; nextTitle: Title | null; gamesUntilNext: number } {
+export function getProgress(): Progress & {
+  title: Title;
+  nextTitle: Title | null;
+  perfectUntilNext: number;
+} {
   const p = read();
-  const titleIdx = [...TITLES].reverse().findIndex((t) => p.gamesPlayed >= t.minGames);
+  const titleIdx = [...TITLES].reverse().findIndex((t) => p.perfectGames >= t.minPerfect);
   const currentTitle = TITLES[TITLES.length - 1 - titleIdx] ?? TITLES[0];
   const currentIdx = TITLES.indexOf(currentTitle);
   const nextTitle = TITLES[currentIdx + 1] ?? null;
-  const gamesUntilNext = nextTitle ? nextTitle.minGames - p.gamesPlayed : 0;
-  return { ...p, title: currentTitle, nextTitle, gamesUntilNext };
+  const perfectUntilNext = nextTitle ? nextTitle.minPerfect - p.perfectGames : 0;
+  return { ...p, title: currentTitle, nextTitle, perfectUntilNext };
 }
 
-/** Call after each completed game. Returns new title if just unlocked, else null. */
-export function recordGame(): Title | null {
+/** Call after each completed game. Pass isPerfect=true if score was 5/5. Returns new title if just unlocked. */
+export function recordGame(isPerfect: boolean): Title | null {
+  if (!isPerfect) return null;
   const p = read();
   const before = getProgress().title;
-  p.gamesPlayed += 1;
+  p.perfectGames += 1;
   write(p);
   const after = getProgress().title;
-  return after.minGames !== before.minGames ? after : null;
+  return after.minPerfect !== before.minPerfect ? after : null;
 }

@@ -81,8 +81,8 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
     });
   }
 
-  function handleGameComplete() {
-    const newTitle = recordGame();
+  function handleGameComplete(score: number) {
+    const newTitle = recordGame(score === 5);
     setTitleProgress(getProgress());
     if (newTitle) setUnlockedTitle(newTitle);
     if (isDaily && dailyDate) markDateCompleted(dailyDate);
@@ -191,7 +191,7 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
             <div className="text-white/30 text-xs mb-2">
               {titleProgress.title.name}
               {titleProgress.nextTitle && (
-                <span> · {titleProgress.gamesUntilNext} games to {titleProgress.nextTitle.name}</span>
+                <span> · {titleProgress.perfectUntilNext} perfect {titleProgress.perfectUntilNext === 1 ? 'game' : 'games'} to {titleProgress.nextTitle.name}</span>
               )}
             </div>
             {titleProgress.nextTitle && (
@@ -199,8 +199,8 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
                 <div
                   className="h-full bg-white/40 rounded-full transition-all duration-500"
                   style={{
-                    width: `${Math.min(100, ((titleProgress.gamesPlayed - titleProgress.title.minGames) /
-                      (titleProgress.nextTitle.minGames - titleProgress.title.minGames)) * 100)}%`
+                    width: `${Math.min(100, ((titleProgress.perfectGames - titleProgress.title.minPerfect) /
+                      (titleProgress.nextTitle.minPerfect - titleProgress.title.minPerfect)) * 100)}%`
                   }}
                 />
               </div>

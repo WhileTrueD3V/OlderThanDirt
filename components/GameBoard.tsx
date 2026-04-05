@@ -12,7 +12,7 @@ interface Props {
   isDaily?: boolean;
   onPlayAgain: () => void;
   onGoHome: () => void;
-  onGameComplete?: () => void;
+  onGameComplete?: (score: number) => void;
 }
 
 export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGameComplete }: Props) {
@@ -35,8 +35,9 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
   );
 
   function handleSubmit() {
+    const finalScore = calculateScore(items, correctOrder);
     setSubmitted(true);
-    onGameComplete?.();
+    onGameComplete?.(finalScore);
   }
 
   return (
@@ -92,9 +93,11 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                         {...provided.dragHandleProps}
                         style={{
                           ...provided.draggableProps.style,
-                          transition: snapshot.isDropAnimating
+                          transition: snapshot.isDragging
+                            ? 'none'  // no lag while following cursor
+                            : snapshot.isDropAnimating
                             ? 'transform 80ms cubic-bezier(0.2, 0, 0, 1)'
-                            : provided.draggableProps.style?.transition,
+                            : 'transform 100ms cubic-bezier(0.2, 0, 0, 1)',  // other cards shifting — faster than library default 200ms
                         }}
                         onMouseDown={() => !submitted && setPressedId(event.id)}
                         onMouseUp={() => setPressedId(null)}
@@ -102,7 +105,9 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                       >
                         <div
                           style={{
-                            transition: snapshot.isDropAnimating
+                            transition: snapshot.isDragging
+                              ? 'none'
+                              : snapshot.isDropAnimating
                               ? 'transform 80ms cubic-bezier(0.2, 0, 0, 1), background-color 80ms ease, border-color 80ms ease'
                               : 'transform 80ms ease-out, background-color 100ms ease, border-color 100ms ease, box-shadow 100ms ease',
                           }}
