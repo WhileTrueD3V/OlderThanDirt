@@ -96,25 +96,23 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
-                        onMouseDown={() => !submitted && setPressedId(event.id)}
-                        onMouseUp={() => setPressedId(null)}
-                        onMouseLeave={() => setPressedId(null)}
                         style={{
                           ...provided.draggableProps.style,
                           transitionDuration: snapshot.isDropAnimating ? '0.001s' : undefined,
-                          transform: (pressedId === event.id || snapshot.isDragging)
-                            ? `${provided.draggableProps.style?.transform ?? ''} scale(0.96)`
-                            : provided.draggableProps.style?.transform,
                         }}
-                        className={`
-                          flex items-center gap-3 rounded-2xl border p-3.5 transition-colors duration-100 select-none
+                        onMouseDown={() => !submitted && setPressedId(event.id)}
+                        onMouseUp={() => setPressedId(null)}
+                        onMouseLeave={() => setPressedId(null)}
+                      >
+                        <div className={`
+                          flex items-center gap-3 rounded-2xl border p-3.5 transition-[colors,transform] duration-75 select-none
+                          ${(pressedId === event.id || snapshot.isDragging) ? 'scale-[0.96]' : 'scale-100'}
                           ${snapshot.isDragging ? 'bg-white/25 border-white/40 shadow-2xl shadow-black/20'
                             : isCorrect ? 'bg-teal-300/15 border-teal-300/30'
                             : isWrong ? 'bg-red-300/10 border-red-200/20'
                             : 'bg-white/10 border-white/15 hover:bg-white/15 hover:border-white/25'}
                           ${!submitted && !snapshot.isDragging ? 'cursor-grab active:cursor-grabbing' : ''}
-                        `}
-                      >
+                        `}>
                         <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-xl">
                           {event.emoji}
                         </div>
@@ -145,6 +143,7 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                               ))}
                             </div>
                           )}
+                        </div>
                         </div>
                       </div>
                     )}
