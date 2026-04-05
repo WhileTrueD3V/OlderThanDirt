@@ -64,12 +64,8 @@ function ShareModal({
     setTimeout(() => setCopied(false), 2000);
   }
 
-  function shareTwitter() {
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
-  }
-
-  function shareWhatsApp() {
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  function shareMessages() {
+    window.open(`sms:?body=${encodeURIComponent(text)}`);
   }
 
   // Preview: replace the JOIN ME line with a styled version
@@ -129,16 +125,10 @@ function ShareModal({
             {copied ? '✓ Copied to clipboard!' : '📋 Copy to clipboard'}
           </button>
           <button
-            onClick={shareTwitter}
+            onClick={shareMessages}
             className="w-full py-3.5 rounded-2xl bg-white/10 hover:bg-white/18 border border-white/15 text-white font-semibold text-sm transition-all cursor-pointer active:scale-[0.98]"
           >
-            𝕏 &nbsp;Share on X / Twitter
-          </button>
-          <button
-            onClick={shareWhatsApp}
-            className="w-full py-3.5 rounded-2xl bg-white/10 hover:bg-white/18 border border-white/15 text-white font-semibold text-sm transition-all cursor-pointer active:scale-[0.98]"
-          >
-            💬 Share on WhatsApp
+            💬 Share on Messages
           </button>
         </div>
       </motion.div>
