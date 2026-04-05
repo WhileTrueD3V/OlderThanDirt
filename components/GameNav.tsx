@@ -92,7 +92,7 @@ export default function GameNav({
           <Logo />
           {titleProgress && (
             <span className="text-[11px] text-white/40 font-medium tracking-wide">
-              {titleProgress.title.name} · {titleProgress.perfectGames} perfect
+              {titleProgress.title.name} · {titleProgress.perfectGames} games
             </span>
           )}
         </div>

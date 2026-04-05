@@ -82,7 +82,7 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
   }
 
   function handleGameComplete(score: number) {
-    const newTitle = recordGame(score === 5);
+    const newTitle = recordGame(score >= 3);
     setTitleProgress(getProgress());
     if (newTitle) setUnlockedTitle(newTitle);
     if (isDaily && dailyDate) markDateCompleted(dailyDate);
@@ -191,7 +191,7 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
             <div className="text-white/30 text-xs mb-2">
               {titleProgress.title.name}
               {titleProgress.nextTitle && (
-                <span> · {titleProgress.perfectUntilNext} perfect {titleProgress.perfectUntilNext === 1 ? 'game' : 'games'} to {titleProgress.nextTitle.name}</span>
+                <span> · {titleProgress.perfectUntilNext} {titleProgress.perfectUntilNext === 1 ? 'game' : 'games'} (3+/5) to {titleProgress.nextTitle.name}</span>
               )}
             </div>
             {titleProgress.nextTitle && (

@@ -56,9 +56,9 @@ export function getProgress(): Progress & {
   return { ...p, title: currentTitle, nextTitle, perfectUntilNext };
 }
 
-/** Call after each completed game. Pass isPerfect=true if score was 5/5. Returns new title if just unlocked. */
-export function recordGame(isPerfect: boolean): Title | null {
-  if (!isPerfect) return null;
+/** Call after each completed game. Pass true if score was 3+/5. Returns new title if just unlocked. */
+export function recordGame(qualifies: boolean): Title | null {
+  if (!qualifies) return null;
   const p = read();
   const before = getProgress().title;
   p.perfectGames += 1;
