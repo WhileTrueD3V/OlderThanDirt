@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition, useEffect, useRef } from 'react';
 import { Topic, CountryCode } from '@/types/game';
 import { GameEvent } from '@/types/game';
 import { getEventsForGame, getDailyEvents, getDailyTopic, getTodayUTC, TOPICS } from '@/lib/gameUtils';
 import { recordGame, getProgress, Title } from '@/lib/titles';
 import { markDateCompleted } from '@/lib/dailyRecord';
+import { saveGameResult } from '@/lib/gameHistory';
 import GameNav from './GameNav';
 import GameBoard from './GameBoard';
 import DailyList from './DailyList';
+import AdminPanel from './AdminPanel';
 
 interface Props {
   initialTopic: Topic;
@@ -36,11 +38,31 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
     typeof window !== 'undefined' ? getProgress() : null
   );
 
+  // Admin panel
+  const [showAdmin, setShowAdmin] = useState(false);
+  const sequenceRef = useRef<{ topic: Topic | 'daily'; time: number }[]>([]);
+  const SECRET_SEQUENCE: (Topic | 'daily')[] = ['popculture', 'daily', 'inventions', 'food'];
+
   useEffect(() => {
     setTitleProgress(getProgress());
   }, []);
 
+  function pushSequence(item: Topic | 'daily') {
+    const now = Date.now();
+    const seq = [...sequenceRef.current, { topic: item, time: now }].filter(
+      (s) => now - s.time < 5000
+    );
+    sequenceRef.current = seq;
+    const topics = seq.map((s) => s.topic);
+    const n = SECRET_SEQUENCE.length;
+    if (topics.length >= n && topics.slice(-n).join(',') === SECRET_SEQUENCE.join(',')) {
+      sequenceRef.current = [];
+      setShowAdmin(true);
+    }
+  }
+
   function selectTopic(t: Topic) {
+    pushSequence(t);
     startTransition(() => {
       const evts = getEventsForGame(t, country, []);
       setTopic(t);
@@ -65,7 +87,7 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
   }
 
   function goDaily() {
-    // Just open the daily list — don't auto-load a puzzle
+    pushSequence('daily');
     setIsDaily(true);
     setDailyDate(null);
   }
@@ -82,6 +104,14 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
   }
 
   function handleGameComplete(score: number) {
+    // Save locally
+    saveGameResult({ topic, country, score, isDaily });
+    // Save to Redis (fire-and-forget)
+    fetch('/api/record-game', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, country, score, isDaily }),
+    }).catch(() => { /* silently ignore if offline */ });
     const newTitle = recordGame(score >= 3);
     setTitleProgress(getProgress());
     if (newTitle) setUnlockedTitle(newTitle);
@@ -100,6 +130,8 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
 
   const topicInfo = TOPICS.find((t) => t.id === topic)!;
   const showDailyList = isDaily && dailyDate === null;
+
+  if (showAdmin) return <AdminPanel onClose={() => setShowAdmin(false)} />;
 
   return (
     <>
