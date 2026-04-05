@@ -98,9 +98,9 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                         {...provided.dragHandleProps}
                         style={{
                           ...provided.draggableProps.style,
-                          // Kill the library's drop animation entirely — card snaps instantly to slot
+                          // Fast ease-out drop — feels quick and smooth, not the sluggish default
                           transition: snapshot.isDropAnimating
-                            ? 'none'
+                            ? 'transform 120ms ease-out'
                             : provided.draggableProps.style?.transition,
                         }}
                         onMouseDown={() => !submitted && setPressedId(event.id)}
@@ -109,9 +109,8 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                       >
                         <div
                           style={{
-                            // Also instant on drop so scale doesn't lag behind position
                             transition: snapshot.isDropAnimating
-                              ? 'none'
+                              ? 'transform 120ms ease-out, background-color 100ms ease, border-color 100ms ease'
                               : 'transform 80ms ease-out, background-color 100ms ease, border-color 100ms ease, box-shadow 100ms ease',
                           }}
                           className={`
