@@ -3,7 +3,33 @@
 import { useState } from 'react';
 import { Reorder, useDragControls, motion } from 'framer-motion';
 import { GameEvent, Topic, CountryCode } from '@/types/game';
-import { sortByYear, calculateScore, formatYear, getScoreMessage } from '@/lib/gameUtils';
+import { sortByYear, calculateScore, formatYear, getScoreMessage, TOPICS, COUNTRIES } from '@/lib/gameUtils';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'olderthandirt.vercel.app';
+
+function buildShareText(
+  items: GameEvent[],
+  correctOrder: GameEvent[],
+  score: number,
+  topic: Topic | undefined,
+  country: CountryCode | undefined,
+  isDaily: boolean,
+): string {
+  const grid = items
+    .map((e, i) => (correctOrder[i].id === e.id ? '🟩' : '🟥'))
+    .join('');
+
+  const topicInfo = TOPICS.find((t) => t.id === topic);
+  const countryInfo = COUNTRIES.find((c) => c.code === country);
+
+  const label = isDaily
+    ? `Daily · ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}`
+    : [topicInfo?.label, countryInfo?.code !== 'global' ? countryInfo?.name : 'Global']
+        .filter(Boolean)
+        .join(' · ');
+
+  return `OlderThanDirt\n${label}\n${grid} ${score}/5\n\n${SITE_URL}`;
+}
 
 interface Props {
   events: GameEvent[];
@@ -97,10 +123,11 @@ function Card({
   );
 }
 
-export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGameComplete }: Props) {
+export default function GameBoard({ events, topic, country, isDaily, onPlayAgain, onGoHome, onGameComplete }: Props) {
   const [items, setItems] = useState<GameEvent[]>(events);
   const [submitted, setSubmitted] = useState(false);
   const [correctOrder] = useState<GameEvent[]>(() => sortByYear(events));
+  const [copied, setCopied] = useState(false);
 
   const score = submitted ? calculateScore(items, correctOrder) : 0;
 
@@ -108,6 +135,16 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
     const finalScore = calculateScore(items, correctOrder);
     setSubmitted(true);
     onGameComplete?.(finalScore);
+  }
+
+  async function handleShare() {
+    const text = buildShareText(items, correctOrder, score, topic, country, !!isDaily);
+    if (navigator.share) {
+      try { await navigator.share({ text }); return; } catch { /* user cancelled */ }
+    }
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -131,12 +168,18 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
           }`}>
             {score}/5
           </div>
-          <div>
+          <div className="flex-1">
             <div className="font-semibold text-white">{getScoreMessage(score)}</div>
             <div className="text-sm text-white/45 mt-0.5">
               {score === 5 ? 'All 5 in the right order' : `${score} card${score === 1 ? '' : 's'} in the correct position`}
             </div>
           </div>
+          <button
+            onClick={handleShare}
+            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white/70 hover:text-white text-xs font-semibold transition-all cursor-pointer active:scale-95"
+          >
+            {copied ? '✓ Copied' : '↑ Share'}
+          </button>
         </motion.div>
       )}
 

@@ -12,9 +12,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://olderthandirt.vercel.app';
+
 export const metadata: Metadata = {
-  title: "OlderThanDirt — Timeline Ordering Game",
-  description: "Sort 5 historical events into chronological order. Food, Inventions, Pop Culture — which came first?",
+  title: 'OlderThanDirt — Timeline Ordering Game',
+  description: 'Sort 5 historical events into chronological order. Food, Inventions, Pop Culture — how well do you know what came first?',
+  metadataBase: new URL(SITE_URL),
+  openGraph: {
+    title: 'OlderThanDirt',
+    description: 'How well do you know what came first? Sort events into chronological order.',
+    url: SITE_URL,
+    siteName: 'OlderThanDirt',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'OlderThanDirt',
+    description: 'How well do you know what came first? Sort events into chronological order.',
+  },
 };
 
 export default function RootLayout({

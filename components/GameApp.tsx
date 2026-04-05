@@ -207,6 +207,8 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
             <div className="fade-in" key={gameKey}>
               <GameBoard
                 events={currentEvents}
+                topic={topic}
+                country={country}
                 isDaily={isDaily}
                 onPlayAgain={playAgain}
                 onGoHome={goDaily}
