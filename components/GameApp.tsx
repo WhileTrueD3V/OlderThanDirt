@@ -134,7 +134,7 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
           ) : (
             <p className="text-white/35 text-xs uppercase tracking-widest mb-3">Sort by date</p>
           )}
-          <h1 className="text-5xl font-black text-white leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight">
             <span className="text-white/20">· </span>
             {topicInfo.label}
             <span className="text-white/20"> ·</span>
