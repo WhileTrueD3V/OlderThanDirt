@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TOPICS, COUNTRIES } from '@/lib/gameUtils';
+import { TOPICS, COUNTRIES, getAvailableDailyDates, getDailyTopic } from '@/lib/gameUtils';
 
 interface StatsData {
   total: number;
@@ -21,8 +21,9 @@ interface StatsData {
 }
 
 export default function AdminPanel({ onClose }: { onClose: () => void }) {
-  const [tab, setTab] = useState<'overview' | 'history'>('overview');
+  const [tab, setTab] = useState<'overview' | 'daily' | 'history'>('overview');
   const [stats, setStats] = useState<StatsData | null>(null);
+  const [dailyCounts, setDailyCounts] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,6 +34,14 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
         else setStats(data);
       })
       .catch(() => setError('Could not load stats. Check env vars.'));
+
+    const dates = getAvailableDailyDates();
+    if (dates.length > 0) {
+      fetch(`/api/daily-counts?dates=${dates.join(',')}`)
+        .then((r) => r.json())
+        .then(setDailyCounts)
+        .catch(() => {});
+    }
   }, []);
 
   const topicLabel = (id: string) => TOPICS.find((t) => t.id === id)?.label ?? id;
@@ -74,7 +83,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
           <>
             {/* Tabs */}
             <div className="flex gap-2 mb-8">
-              {(['overview', 'history'] as const).map((t) => (
+              {(['overview', 'daily', 'history'] as const).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
@@ -184,6 +193,48 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
                 </Section>
               </div>
             )}
+
+            {tab === 'daily' && (() => {
+              const dates = getAvailableDailyDates();
+              const totalAttempts = Object.values(dailyCounts).reduce((s, n) => s + n, 0);
+              return (
+                <Section title={`Daily Puzzles — ${totalAttempts} total true attempts`}>
+                  {dates.length === 0 ? (
+                    <p className="text-white/30 text-sm">No daily puzzles yet.</p>
+                  ) : (
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-white/30 text-xs uppercase tracking-wider">
+                          <th className="text-left pb-2">Date</th>
+                          <th className="text-left pb-2">Topic</th>
+                          <th className="text-right pb-2">True attempts</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {dates.map((d) => {
+                          const topic = getDailyTopic(d);
+                          const topicInfo = TOPICS.find((t) => t.id === topic);
+                          const count = dailyCounts[d] ?? 0;
+                          const [, m, day] = d.split('-').map(Number);
+                          const label = new Date(Date.UTC(2026, m - 1, day)).toLocaleDateString('en-US', {
+                            month: 'short', day: 'numeric', timeZone: 'UTC',
+                          });
+                          return (
+                            <tr key={d}>
+                              <td className="py-2 text-white/60">{label}</td>
+                              <td className="py-2 text-white/50">{topicInfo?.emoji} {topicInfo?.label}</td>
+                              <td className="py-2 text-right font-bold tabular-nums">
+                                {count === 0 ? <span className="text-white/25">0</span> : count}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </Section>
+              );
+            })()}
 
             {tab === 'history' && (
               <Section title={`All Games (${stats.history.length})`}>
