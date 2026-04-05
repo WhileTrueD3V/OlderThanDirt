@@ -25,6 +25,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [dailyCounts, setDailyCounts] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
+  const [resetState, setResetState] = useState<'idle' | 'confirm' | 'resetting' | 'done'>('idle');
 
   useEffect(() => {
     fetch('/api/admin/stats')
@@ -60,12 +61,48 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
             <h1 className="text-2xl font-black">Admin Panel</h1>
             <p className="text-white/30 text-xs mt-0.5">All devices · All players</p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-white/30 hover:text-white/70 text-sm cursor-pointer transition-colors"
-          >
-            ← Exit
-          </button>
+          <div className="flex items-center gap-3">
+            {resetState === 'idle' && (
+              <button
+                onClick={() => setResetState('confirm')}
+                className="text-red-400/50 hover:text-red-400 text-xs cursor-pointer transition-colors"
+              >
+                Reset data
+              </button>
+            )}
+            {resetState === 'confirm' && (
+              <div className="flex items-center gap-2">
+                <span className="text-red-300 text-xs">Sure?</span>
+                <button
+                  onClick={async () => {
+                    setResetState('resetting');
+                    await fetch('/api/admin/reset', { method: 'POST' });
+                    setStats(null);
+                    setDailyCounts({});
+                    setResetState('done');
+                    setTimeout(() => setResetState('idle'), 2000);
+                  }}
+                  className="text-red-400 hover:text-red-300 text-xs font-bold cursor-pointer transition-colors"
+                >
+                  Yes, wipe it
+                </button>
+                <button
+                  onClick={() => setResetState('idle')}
+                  className="text-white/30 hover:text-white/60 text-xs cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+            {resetState === 'resetting' && <span className="text-white/30 text-xs">Resetting…</span>}
+            {resetState === 'done' && <span className="text-teal-400 text-xs">✓ Cleared</span>}
+            <button
+              onClick={onClose}
+              className="text-white/30 hover:text-white/70 text-sm cursor-pointer transition-colors"
+            >
+              ← Exit
+            </button>
+          </div>
         </div>
 
         {error && (
