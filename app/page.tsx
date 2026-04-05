@@ -17,7 +17,7 @@ export default async function Home({ searchParams }: PageProps) {
   const isDaily = params.daily === 'true';
   const initialTopic = isDaily
     ? getDailyTopic(getTodayUTC())
-    : (VALID_TOPICS.includes(params.topic as Topic) ? (params.topic as Topic) : 'popculture');
+    : (VALID_TOPICS.includes(params.topic as Topic) ? (params.topic as Topic) : 'food');
   const initialCountry = (VALID_COUNTRIES.includes(params.country as CountryCode)
     ? params.country as CountryCode
     : 'global');
