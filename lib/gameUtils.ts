@@ -93,16 +93,21 @@ export function getDailyEvents(dateStr: string): GameEvent[] {
   return seededShuffle(pool, dateStrToSeed(dateStr)).slice(0, 5);
 }
 
-/** Returns the last `count` UTC date strings (today first) */
-export function getAvailableDailyDates(count = 30): string[] {
+// The first date daily puzzles were available
+export const DAILY_LAUNCH_DATE = '2026-03-30';
+
+/** Returns all available daily dates from launch date to today (today first) */
+export function getAvailableDailyDates(): string[] {
   const dates: string[] = [];
   const now = new Date();
-  for (let i = 0; i < count; i++) {
-    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i));
+  const launch = new Date(DAILY_LAUNCH_DATE + 'T00:00:00Z');
+  let d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  while (d >= launch) {
     const y = d.getUTCFullYear();
     const m = String(d.getUTCMonth() + 1).padStart(2, '0');
     const day = String(d.getUTCDate()).padStart(2, '0');
     dates.push(`${y}-${m}-${day}`);
+    d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - 1));
   }
   return dates;
 }

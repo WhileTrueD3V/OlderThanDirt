@@ -21,7 +21,7 @@ export default function DailyList({ onSelectDate }: Props) {
   const today = getTodayUTC();
 
   useEffect(() => {
-    const available = getAvailableDailyDates(30);
+    const available = getAvailableDailyDates();
     setDates(available);
     setCompleted(new Set(available.filter(isDateCompleted)));
   }, []);
