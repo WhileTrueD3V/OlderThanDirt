@@ -29,6 +29,7 @@ function Card({
   correctPos: number;
 }) {
   const controls = useDragControls();
+  const [isPressed, setIsPressed] = useState(false);
 
   return (
     <Reorder.Item
@@ -37,14 +38,12 @@ function Card({
       dragControls={controls}
       dragElastic={0.08}
       dragTransition={{ bounceStiffness: 600, bounceDamping: 40 }}
-      animate={{ scale: 1 }}
-      whileDrag={{ scale: 0.96, boxShadow: '0 16px 40px rgba(0,0,0,0.25)', zIndex: 50 }}
-      whileTap={submitted ? {} : { scale: 0.96 }}
+      animate={{ scale: isPressed ? 0.96 : 1 }}
       transition={{
         layout: { duration: 0.15, ease: [0.2, 0, 0, 1] },
         scale: { type: 'spring', stiffness: 500, damping: 14 },
-        boxShadow: { duration: 0.1 },
       }}
+      style={{ zIndex: isPressed ? 50 : 'auto' as const }}
       className={`
         flex items-center gap-3 rounded-2xl border p-3.5 select-none
         ${submitted ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}
@@ -55,8 +54,13 @@ function Card({
           : 'bg-white/10 border-white/15 hover:bg-white/15 hover:border-white/25'}
       `}
       onPointerDown={(e) => {
-        if (!submitted) controls.start(e);
+        if (submitted) return;
+        setIsPressed(true);
+        controls.start(e);
       }}
+      onPointerUp={() => setIsPressed(false)}
+      onPointerCancel={() => setIsPressed(false)}
+      onDragEnd={() => setIsPressed(false)}
     >
       <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-xl">
         {event.emoji}
