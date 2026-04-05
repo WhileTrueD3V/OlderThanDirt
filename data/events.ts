@@ -1,6 +1,8 @@
 import { GameEvent } from '@/types/game';
+import { events_us_uk } from './events_us_uk';
+import { events_fr_de } from './events_fr_de';
 
-export const events: GameEvent[] = [
+const baseEvents: GameEvent[] = [
   // ── FOOD ──────────────────────────────────────────────────────────────────
   {
     id: 'food-cheddar',
@@ -1868,4 +1870,10 @@ export const events: GameEvent[] = [
     countries: ['cn'],
     emoji: '🏯',
   },
+];
+
+export const events: GameEvent[] = [
+  ...baseEvents,
+  ...events_us_uk,
+  ...events_fr_de,
 ];
