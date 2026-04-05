@@ -21,6 +21,7 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
   const [submitted, setSubmitted] = useState(false);
   const [finalStreak, setFinalStreak] = useState<number | null>(null);
   const [correctOrder] = useState<GameEvent[]>(() => sortByYear(events));
+  const [pressedId, setPressedId] = useState<string | null>(null);
 
   const score = submitted ? calculateScore(items, correctOrder) : 0;
 
@@ -95,10 +96,13 @@ export default function GameBoard({ events, isDaily, onPlayAgain, onGoHome, onGa
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
+                        onMouseDown={() => !submitted && setPressedId(event.id)}
+                        onMouseUp={() => setPressedId(null)}
+                        onMouseLeave={() => setPressedId(null)}
                         style={{
                           ...provided.draggableProps.style,
                           transitionDuration: snapshot.isDropAnimating ? '0.001s' : undefined,
-                          transform: snapshot.isDragging
+                          transform: (pressedId === event.id || snapshot.isDragging)
                             ? `${provided.draggableProps.style?.transform ?? ''} scale(0.96)`
                             : provided.draggableProps.style?.transform,
                         }}
