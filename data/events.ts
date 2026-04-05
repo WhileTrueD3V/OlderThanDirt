@@ -3,6 +3,7 @@ import { events_us_uk } from './events_us_uk';
 import { events_fr_de } from './events_fr_de';
 import { events_it_es } from './events_it_es';
 import { events_au_br } from './events_au_br';
+import { events_jp_cn } from './events_jp_cn';
 
 const baseEvents: GameEvent[] = [
   // ── FOOD ──────────────────────────────────────────────────────────────────
@@ -1880,4 +1881,5 @@ export const events: GameEvent[] = [
   ...events_fr_de,
   ...events_it_es,
   ...events_au_br,
+  ...events_jp_cn,
 ];
