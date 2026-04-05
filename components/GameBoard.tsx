@@ -34,7 +34,7 @@ function buildShareText(
     ? `I got ${score}/5 — think you can do better?`
     : `Only got ${score}/5 — this one's tough. Can you beat me?`;
 
-  return `Check out my answer on OlderThanDirt!\n\n${label}\n${grid} ${score}/5\n\n${scoreComment}\n\nJOIN ME 👉 ${SITE_URL}`;
+  return `Check out my answer on OlderThanDirt!\n\n${label} — ${score}/5\n\n${scoreComment}\n\nJOIN ME 👉 ${SITE_URL}`;
 }
 
 function ShareModal({
