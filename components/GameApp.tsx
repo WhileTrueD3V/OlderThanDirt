@@ -166,13 +166,14 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
         {showDailyList ? (
           <>
             <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 backdrop-blur-md rounded-full px-4 py-1.5 mb-4">
-                <span>🔥</span>
-                <span className="text-white/80 text-xs font-semibold uppercase tracking-widest">
+              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 backdrop-blur-md rounded-full px-5 py-2 mb-5">
+                <span className="text-xl">🔥</span>
+                <span className="text-white/80 text-sm font-bold uppercase tracking-widest">
                   Daily Puzzles
                 </span>
               </div>
-              <p className="text-white/40 text-sm">Pick a day to play</p>
+              <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">Pick a day to play</h1>
+              <p className="text-white/35 text-sm">One attempt per puzzle — make it count</p>
             </div>
             <DailyList onSelectDate={selectDailyDate} />
           </>
