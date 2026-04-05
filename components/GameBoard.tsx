@@ -28,7 +28,122 @@ function buildShareText(
         .filter(Boolean)
         .join(' · ');
 
-  return `OlderThanDirt\n${label}\n${grid} ${score}/5\n\n${SITE_URL}`;
+  const scoreComment = score === 5
+    ? "I got a perfect score 🏆 Can you beat it?"
+    : score >= 3
+    ? `I got ${score}/5 — think you can do better?`
+    : `Only got ${score}/5 — this one's tough. Can you beat me?`;
+
+  return `Check out my answer on OlderThanDirt!\n\n${label}\n${grid} ${score}/5\n\n${scoreComment}\n\nJOIN ME 👉 ${SITE_URL}`;
+}
+
+function ShareModal({
+  items,
+  correctOrder,
+  score,
+  topic,
+  country,
+  isDaily,
+  onClose,
+}: {
+  items: GameEvent[];
+  correctOrder: GameEvent[];
+  score: number;
+  topic: Topic | undefined;
+  country: CountryCode | undefined;
+  isDaily: boolean;
+  onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const text = buildShareText(items, correctOrder, score, topic, country, isDaily);
+  const url = `https://${SITE_URL}`;
+
+  async function copyText() {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function shareTwitter() {
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+  }
+
+  function shareWhatsApp() {
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  }
+
+  // Preview: replace the JOIN ME line with a styled version
+  const previewLines = text.split('\n');
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+      {/* Sheet */}
+      <motion.div
+        initial={{ opacity: 0, y: 32, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 32, scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+        className="relative w-full max-w-sm bg-[#16162a] border border-white/10 rounded-3xl p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/50 hover:text-white transition-all cursor-pointer text-sm"
+        >
+          ✕
+        </button>
+
+        <h2 className="text-white font-black text-lg mb-1">Share your result</h2>
+        <p className="text-white/35 text-xs mb-5">Challenge your friends to beat your score</p>
+
+        {/* Preview card */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-5 font-mono text-sm leading-relaxed">
+          {previewLines.map((line, i) => (
+            <div key={i} className={
+              line.startsWith('JOIN ME') ? 'text-violet-300 font-bold mt-1' :
+              line.startsWith('Check out') ? 'text-white font-semibold' :
+              line === '' ? 'h-2' :
+              'text-white/55'
+            }>
+              {line || '\u00A0'}
+            </div>
+          ))}
+        </div>
+
+        {/* Share buttons */}
+        <div className="flex flex-col gap-2.5">
+          <button
+            onClick={copyText}
+            className="w-full py-3.5 rounded-2xl bg-white/10 hover:bg-white/18 border border-white/15 text-white font-semibold text-sm transition-all cursor-pointer active:scale-[0.98]"
+          >
+            {copied ? '✓ Copied to clipboard!' : '📋 Copy to clipboard'}
+          </button>
+          <button
+            onClick={shareTwitter}
+            className="w-full py-3.5 rounded-2xl bg-white/10 hover:bg-white/18 border border-white/15 text-white font-semibold text-sm transition-all cursor-pointer active:scale-[0.98]"
+          >
+            𝕏 &nbsp;Share on X / Twitter
+          </button>
+          <button
+            onClick={shareWhatsApp}
+            className="w-full py-3.5 rounded-2xl bg-white/10 hover:bg-white/18 border border-white/15 text-white font-semibold text-sm transition-all cursor-pointer active:scale-[0.98]"
+          >
+            💬 Share on WhatsApp
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
 }
 
 interface Props {
@@ -127,7 +242,7 @@ export default function GameBoard({ events, topic, country, isDaily, onPlayAgain
   const [items, setItems] = useState<GameEvent[]>(events);
   const [submitted, setSubmitted] = useState(false);
   const [correctOrder] = useState<GameEvent[]>(() => sortByYear(events));
-  const [copied, setCopied] = useState(false);
+  const [showShare, setShowShare] = useState(false);
 
   const score = submitted ? calculateScore(items, correctOrder) : 0;
 
@@ -135,16 +250,6 @@ export default function GameBoard({ events, topic, country, isDaily, onPlayAgain
     const finalScore = calculateScore(items, correctOrder);
     setSubmitted(true);
     onGameComplete?.(finalScore);
-  }
-
-  async function handleShare() {
-    const text = buildShareText(items, correctOrder, score, topic, country, !!isDaily);
-    if (navigator.share) {
-      try { await navigator.share({ text }); return; } catch { /* user cancelled */ }
-    }
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -175,10 +280,10 @@ export default function GameBoard({ events, topic, country, isDaily, onPlayAgain
             </div>
           </div>
           <button
-            onClick={handleShare}
-            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white/70 hover:text-white text-xs font-semibold transition-all cursor-pointer active:scale-95"
+            onClick={() => setShowShare(true)}
+            className="flex-shrink-0 flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white/70 hover:text-white text-sm font-semibold transition-all cursor-pointer active:scale-95"
           >
-            {copied ? '✓ Copied' : '↑ Share'}
+            ↑ Share
           </button>
         </motion.div>
       )}
@@ -244,6 +349,19 @@ export default function GameBoard({ events, topic, country, isDaily, onPlayAgain
         >
           Play again
         </button>
+      )}
+
+      {/* Share modal */}
+      {showShare && (
+        <ShareModal
+          items={items}
+          correctOrder={correctOrder}
+          score={score}
+          topic={topic}
+          country={country}
+          isDaily={!!isDaily}
+          onClose={() => setShowShare(false)}
+        />
       )}
     </div>
   );
