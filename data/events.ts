@@ -1,6 +1,7 @@
 import { GameEvent } from '@/types/game';
 import { events_us_uk } from './events_us_uk';
 import { events_fr_de } from './events_fr_de';
+import { events_it_es } from './events_it_es';
 
 const baseEvents: GameEvent[] = [
   // ── FOOD ──────────────────────────────────────────────────────────────────
@@ -1876,4 +1877,5 @@ export const events: GameEvent[] = [
   ...baseEvents,
   ...events_us_uk,
   ...events_fr_de,
+  ...events_it_es,
 ];
