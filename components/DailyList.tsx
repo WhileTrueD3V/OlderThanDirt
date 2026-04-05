@@ -63,10 +63,10 @@ export default function DailyList({ onSelectDate }: Props) {
                   </span>
                 )}
               </div>
-              <div className="text-white/40 text-xs mt-0.5">
+              <div className="text-white/65 text-xs mt-0.5">
                 {topicInfo.emoji} {topicInfo.label}
               </div>
-              <div className="text-white/50 text-[11px] mt-1">
+              <div className="text-white/70 text-xs mt-1">
                 attempted by {playerCount.toLocaleString()} {playerCount === 1 ? 'player' : 'players'}
               </div>
             </div>

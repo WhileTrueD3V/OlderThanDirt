@@ -224,7 +224,7 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
       <footer className="max-w-xl mx-auto px-5 pb-10 text-center">
         {titleProgress && (
           <div className="mb-4">
-            <div className="text-white/30 text-xs mb-2">
+            <div className="text-white/55 text-xs mb-2">
               {titleProgress.title.name}
               {titleProgress.nextTitle && (
                 <span> · {titleProgress.perfectUntilNext} {titleProgress.perfectUntilNext === 1 ? 'game' : 'games'} (3+/5) to {titleProgress.nextTitle.name}</span>
@@ -243,7 +243,7 @@ export default function GameApp({ initialTopic, initialCountry, initialIsDaily }
             )}
           </div>
         )}
-        <p className="text-white/20 text-xs">
+        <p className="text-white/45 text-xs">
           OlderThanDirt — how well do you know what came first?
         </p>
       </footer>
